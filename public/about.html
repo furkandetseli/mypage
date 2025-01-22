@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Furkan Detseli - Hakkımda</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #0a192f;
+            color: #8892b0;
+            line-height: 1.6;
+            padding-top: 80px;
+        }
+
+        /* About page specific styles */
+        .about-section {
+            padding: 150px 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .about-content h1 {
+            color: #ccd6f6;
+            font-size: 32px;
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .about-content h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60%;
+            height: 2px;
+            background: #64ffda;
+        }
+
+        .about-content p {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #8892b0;
+            line-height: 1.8;
+        }
+
+        .highlight {
+            color: #64ffda;
+        }
+
+        .skills-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        .skills-list li {
+            position: relative;
+            padding-left: 20px;
+            color: #8892b0;
+            font-size: 16px;
+        }
+
+        .skills-list li::before {
+            content: '▹';
+            position: absolute;
+            left: 0;
+            color: #64ffda;
+        }
+
+        .profile-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+
+        .profile-wrap {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            object-fit: cover;
+            filter: grayscale(100%);
+            transition: filter 0.3s;
+        }
+
+        .profile-img:hover {
+            filter: none;
+        }
+
+        .profile-border {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #64ffda;
+            border-radius: 10px;
+            z-index: -1;
+            transition: transform 0.3s;
+        }
+
+        .profile-container:hover .profile-border {
+            transform: translate(-15px, -15px);
+        }
+
+        .education-box {
+            background: #112240;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .education-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .education-box h3 {
+            color: #ccd6f6;
+            margin-bottom: 10px;
+        }
+
+        .education-box p {
+            color: #8892b0;
+            margin: 5px 0;
+        }
+
+        .education-box .date {
+            color: #64ffda;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .about-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-container {
+                width: 250px;
+                height: 250px;
+                margin-top: 40px;
+            }
+
+            .skills-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="header-container"></div>
+    <script>
+        fetch('header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header-container').innerHTML = data;
+            });
+    </script>
+
+    <section class="about-section">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-content" data-aos="fade-up">
+                    <h1>Hakkımda</h1>
+                    <p>
+                        Merhaba! Ben Furkan Detseli. Yazılım geliştirme dünyasına olan tutkum, 
+                        <span class="highlight">Celal Bayar Üniversitesi</span>'nde Bilgisayar Programcılığı 
+                        eğitimi alırken başladı. Bu süreçte birçok projede yer alarak teknik becerilerimi 
+                        geliştirme fırsatı buldum.
+                    </p>
+                    <p>
+                        Web ve mobil uygulama geliştirme konusunda deneyim kazanırken, özellikle 
+                        <span class="highlight">REST API'ler</span> geliştirme ve <span class="highlight">
+                        kullanıcı deneyimi</span> optimizasyonu konularında uzmanlaştım. Ayrıca, teknik 
+                        servis deneyimim sayesinde problem çözme ve müşteri odaklı çalışma becerilerimi 
+                        güçlendirdim.
+                    </p>
+                    <p>
+                        Şu anda kullandığım bazı teknolojiler:
+                    </p>
+                    <ul class="skills-list">
+                        <li>Python</li>
+                        <li>JavaScript</li>
+                        <li>Java</li>
+                        <li>Dart & Flutter</li>
+                        <li>Node.js</li>
+                        <li>SQLite</li>
+                        <li>HTML5 & CSS3</li>
+                        <li>Git</li>
+                    </ul>
+
+                    <div class="education-box" data-aos="fade-up">
+                        <h3>Eğitim</h3>
+                        <p>Celal Bayar Üniversitesi</p>
+                        <p>Bilgisayar Programcılığı</p>
+                        <p class="date">2022 - 2024</p>
+                    </div>
+
+                    <div class="education-box" data-aos="fade-up">
+                        <h3>Lise Eğitimi</h3>
+                        <p>Behçet Uz Anadolu Lisesi</p>
+                        <p class="date">2018 - 2022</p>
+                    </div>
+                </div>
+
+                <div class="profile-container" data-aos="fade-left">
+                    <div class="profile-wrap">
+                        <img src="/api/placeholder/400/400" alt="Furkan Detseli" class="profile-img">
+                        <div class="profile-border"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            mirror: false
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "development": {
+    "dialect": "sqlite",
+    "storage": "./database.sqlite",
+    "adminToken": "admin-1234-secure-token-5678"
+  },
+  "test": {
+    "dialect": "sqlite",
+    "storage": ":memory:",
+    "adminToken": "test-admin-token"
+  },
+  "production": {
+    "dialect": "sqlite",
+    "storage": "./database.sqlite",
+    "adminToken": "your-secure-admin-token-here"
+  }
+}

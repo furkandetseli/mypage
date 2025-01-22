@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesajlar - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+    <style>
+        .message-card {
+            background: #112240;
+            border-radius: 10px;
+            border: 1px solid #233554;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .message-card:hover {
+            transform: translateY(-2px);
+            border-color: #64ffda;
+        }
+
+        .message-header {
+            padding: 1rem;
+            border-bottom: 1px solid #233554;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message-content {
+            padding: 1rem;
+            color: #8892b0;
+        }
+
+        .message-footer {
+            padding: 1rem;
+            border-top: 1px solid #233554;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .status-new {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+        }
+
+        .status-read {
+            background: rgba(148, 163, 184, 0.1);
+            color: #94a3b8;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-button {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            background: #112240;
+            color: #8892b0;
+            border: 1px solid #233554;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-button.active {
+            background: #64ffda;
+            color: #0a192f;
+            border-color: #64ffda;
+        }
+
+        .search-box {
+            background: #112240;
+            border: 1px solid #233554;
+            color: #ccd6f6;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: #64ffda;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">Admin Panel</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/admin/" class="nav-item">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="/admin/blog.html" class="nav-item">
+                <i class="fas fa-blog"></i>
+                Blog Yazıları
+            </a>
+            <a href="/admin/portfolio.html" class="nav-item">
+                <i class="fas fa-briefcase"></i>
+                Portfolyo
+            </a>
+            <a href="/admin/messages.html" class="nav-item active">
+                <i class="fas fa-envelope"></i>
+                Mesajlar
+            </a>
+            <a href="/admin/settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                Ayarlar
+            </a>
+            <a href="#" onclick="logout()" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                Çıkış Yap
+            </a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="content-header">
+            <h1>Mesajlar</h1>
+            <div class="header-actions">
+                <input type="text" 
+                       placeholder="Mesajlarda ara..." 
+                       class="search-box"
+                       id="searchInput"
+                       onkeyup="filterMessages()">
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <button class="filter-button active" onclick="filterByStatus('all')">
+                Tümü
+            </button>
+            <button class="filter-button" onclick="filterByStatus('new')">
+                Yeni
+            </button>
+            <button class="filter-button" onclick="filterByStatus('read')">
+                Okunmuş
+            </button>
+        </div>
+
+        <div id="messagesList">
+            <!-- Messages will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Message Detail Modal -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Mesaj Detayı</h2>
+                <button onclick="closeModal()" class="close-button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                <!-- Message details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="cancel-button">Kapat</button>
+                <button onclick="deleteMessage()" class="delete-button">
+                    <i class="fas fa-trash"></i> Sil
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin + '/api';
+        const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
+        let currentMessages = [];
+        let currentMessageId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!document.cookie.includes('isLoggedIn=true')) {
+                window.location.href = '/admin/login.html';
+                return;
+            }
+            loadMessages();
+        });
+
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${BASE_URL}/messages`);
+                if (!response.ok) throw new Error('Mesajlar yüklenemedi');
+                
+                const messages = await response.json();
+                currentMessages = messages;
+                
+                renderMessages(messages);
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Mesajlar yüklenirken hata oluştu');
+            }
+        }
+
+        function renderMessages(messages) {
+            const messagesList = document.getElementById('messagesList');
+            
+            if (messages.length === 0) {
+                messagesList.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-400">Henüz mesaj bulunmuyor.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            messagesList.innerHTML = messages.map(message => `
+                <div class="message-card" data-status="${message.status}">
+                    <div class="message-header">
+                        <div>
+                            <h3 class="text-white font-medium">${message.name}</h3>
+                            <p class="text-gray-400 text-sm">${message.email}</p>
+                        </div>
+                        <span class="status-badge status-${message.status}">
+                            ${message.status === 'new' ? 'Yeni' : 'Okundu'}
+                        </span>
+                    </div>
+                    <div class="message-content">
+                        ${message.message.substring(0, 150)}${message.message.length > 150 ? '...' : ''}
+                    </div>
+                    <div class="message-footer">
+                        <span class="text-gray-400 text-sm">
+                            ${new Date(message.created_at).toLocaleDateString('tr-TR')}
+                        </span>
+                        <div class="space-x-2">
+                            <button onclick="viewMessage(${message.id})" 
+                                    class="text-blue-400 hover:text-blue-300">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="deleteMessage(${message.id})" 
+                                    class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterMessages() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredMessages = currentMessages.filter(message => 
+                message.name.toLowerCase().includes(searchTerm) ||
+                message.email.toLowerCase().includes(searchTerm) ||
+                message.message.toLowerCase().includes(searchTerm)
+            );
+            renderMessages(filteredMessages);
+        }
+
+        function filterByStatus(status) {
+            document.querySelectorAll('.filter-button').forEach(btn => 
+                btn.classList.remove('active')
+            );
+            event.target.classList.add('active');
+
+            const filteredMessages = status === 'all' 
+                ? currentMessages 
+                : currentMessages.filter(message => message.status === status);
+            
+            renderMessages(filteredMessages);
+        }
+
+        async function viewMessage(id) {
+            try {
+                const response = await fetch(`${BASE_URL}/messages/${id}`);
+                if (!response.ok) throw new Error('Mesaj detayı alınamadı');
+                
+                const message = await response.json();
+                currentMessageId = id;
+                
+                document.getElementById('modalContent').innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-gray-400">Gönderen:</label>
+                            <p class="text-white">${message.name}</p>
+                        </div>
+                        <div>
+                            <label class="text-gray-400">E-posta:</label>
+                            <p class="text-white">${message.email}</p>
+                        </div>
+                        <div>
+                            <label class="text-gray-400">Tarih:</label>
+                            <p class="text-white">
+                                ${new Date(message.created_at).toLocaleString('tr-TR')}
+                            </p>
+                        </div>
+                        <div>
+                            <label class="text-gray-400">Mesaj:</label>
+                            <p class="text-white">${message.message}</p>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('messageModal').classList.add('active');
+
+                // Mark as read if it's new
+                if (message.status === 'new') {
+                    await fetch(`${BASE_URL}/messages/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                        },
+                        body: JSON.stringify({ status: 'read' })
+                    });
+                    loadMessages(); // Refresh the list
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Mesaj detayı yüklenirken hata oluştu');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('messageModal').classList.remove('active');
+            currentMessageId = null;
+        }
+
+        async function deleteMessage(id = currentMessageId) {
+            if (!id) return;
+            
+            if (!confirm('Bu mesajı silmek istediğinizden emin misiniz?')) return;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/messages/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Mesaj silinemedi');
+
+                alert('Mesaj başarıyla silindi!');
+                closeModal();
+                loadMessages();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Mesaj silinirken hata oluştu');
+            }
+        }
+
+        function logout() {
+            document.cookie = 'isLoggedIn=false; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+            window.location.href = '/admin/login.html';
+        }
+    </script>
+</body>
+</html> 

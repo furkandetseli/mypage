@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Furkan Detseli - Deneyim</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Temel stiller */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #0a192f;
+            color: #8892b0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation styles */
+        nav {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            background: rgba(10, 25, 47, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #64ffda;
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-links a {
+            color: #ccd6f6;
+            text-decoration: none;
+            margin-left: 30px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #64ffda;
+        }
+
+        /* Experience page specific styles */
+        .experience-section {
+            padding: 150px 0;
+            min-height: 100vh;
+        }
+
+        .section-title {
+            color: #ccd6f6;
+            font-size: 32px;
+            margin-bottom: 50px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60%;
+            height: 2px;
+            background: #64ffda;
+        }
+
+        .timeline {
+            position: relative;
+            margin: 50px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            width: 2px;
+            background: #233554;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            padding: 20px 0;
+            width: 100%;
+            position: relative;
+        }
+
+        .timeline-content {
+            position: relative;
+            width: calc(50% - 40px);
+            padding: 30px;
+            background: #112240;
+            border-radius: 10px;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-5px);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            float: left;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            float: right;
+        }
+
+        .timeline-item::after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+
+        .timeline-date {
+            color: #64ffda;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeline-date i {
+            font-size: 1.2em;
+        }
+
+        .timeline-title {
+            color: #ccd6f6;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+
+        .timeline-company {
+            color: #64ffda;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .timeline-points {
+            list-style: none;
+        }
+
+        .timeline-points li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+            color: #8892b0;
+        }
+
+        .timeline-points li::before {
+            content: '▹';
+            position: absolute;
+            left: 0;
+            color: #64ffda;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #64ffda;
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 30px;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .timeline-item:hover .timeline-dot {
+            transform: translateX(-50%) scale(1.3);
+            box-shadow: 0 0 10px #64ffda;
+        }
+
+        .timeline-line {
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            background: #64ffda;
+            top: 39px;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-line {
+            right: calc(50% - 40px);
+        }
+
+        .timeline-item:nth-child(even) .timeline-line {
+            left: calc(50% - 40px);
+        }
+
+        .skills-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .skill-tag {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 40px;
+            }
+
+            .timeline-content {
+                width: calc(100% - 80px);
+                float: right !important;
+                margin-left: 80px;
+            }
+
+            .timeline-dot {
+                left: 40px;
+            }
+
+            .timeline-line {
+                width: 40px;
+                left: 40px !important;
+            }
+        }
+    </style>
+</head>
+<body style="padding-top: 80px;">
+    <div id="header-container"></div>
+    <script>
+        fetch('header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header-container').innerHTML = data;
+            });
+    </script>
+
+    <section class="experience-section">
+        <div class="container">
+            <h1 class="section-title" data-aos="fade-up">Deneyim</h1>
+            
+            <div class="timeline">
+                <div class="timeline-item" data-aos="fade-up">
+                    <div class="timeline-content">
+                        <div class="timeline-date">
+                            <i class="far fa-calendar-alt"></i>
+                            Ağustos 2021 - Günümüz
+                        </div>
+                        <h2 class="timeline-title">Yazılım Geliştirici</h2>
+                        <h3 class="timeline-company">Nicesi</h3>
+                        <ul class="timeline-points">
+                            <li>REST API'ler geliştirdim ve web uygulamalarına yeni özellikler ekledim</li>
+                            <li>Web sitelerinin sürdürülebilirliğini ve entegrasyonunu sağladım</li>
+                            <li>Kullanıcı deneyimini geliştirmek için dinamik ve sezgisel arayüzler tasarladım</li>
+                        </ul>
+                        <div class="skills-tags">
+                            <span class="skill-tag">Python</span>
+                            <span class="skill-tag">JavaScript</span>
+                            <span class="skill-tag">REST API</span>
+                            <span class="skill-tag">Web Development</span>
+                        </div>
+                    </div>
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-line"></div>
+                </div>
+
+                <div class="timeline-item" data-aos="fade-up">
+                    <div class="timeline-content">
+                        <div class="timeline-date">
+                            <i class="far fa-calendar-alt"></i>
+                            Ağustos 2022 - Haziran 2023
+                        </div>
+                        <h2 class="timeline-title">BT Destek Teknisyeni</h2>
+                        <h3 class="timeline-company">Er İletişim</h3>
+                        <ul class="timeline-points">
+                            <li>Müşterilerle etkin iletişim kurarak problemleri tanımladım</li>
+                            <li>Teknik sorunları analiz edip çözüm ürettim</li>
+                            <li>Tamir ve onarım işlemlerinin kayıtlarını tuttum</li>
+                        </ul>
+                        <div class="skills-tags">
+                            <span class="skill-tag">Teknik Destek</span>
+                            <span class="skill-tag">Problem Çözme</span>
+                            <span class="skill-tag">Müşteri İlişkileri</span>
+                        </div>
+                    </div>
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-line"></div>
+                </div>
+
+                <div class="timeline-item" data-aos="fade-up">
+                    <div class="timeline-content">
+                        <div class="timeline-date">
+                            <i class="far fa-calendar-alt"></i>
+                            Haziran 2023 - Temmuz 2023
+                        </div>
+                        <h2 class="timeline-title">Stajyer Bilgi İşlem Personeli</h2>
+                        <h3 class="timeline-company">Karşıyaka Belediyesi</h3>
+                        <ul class="timeline-points">
+                            <li>Belediye bilgi sistemlerinin yönetiminde görev aldım</li>
+                            <li>Teknik destek ve sorun giderme çalışmaları yaptım</li>
+                            <li>Sistem dokümantasyonu ve raporlama süreçlerine katkıda bulundum</li>
+                        </ul>
+                        <div class="skills-tags">
+                            <span class="skill-tag">Sistem Yönetimi</span>
+                            <span class="skill-tag">Teknik Destek</span>
+                            <span class="skill-tag">Dokümantasyon</span>
+                        </div>
+                    </div>
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-line"></div>
+                </div>
+
+                <div class="timeline-item" data-aos="fade-up">
+                    <div class="timeline-content">
+                        <div class="timeline-date">
+                            <i class="far fa-calendar-alt"></i>
+                            Haziran 2024 - Temmuz 2024
+                        </div>
+                        <h2 class="timeline-title">Stajyer Bilgi İşlem Personeli</h2>
+                        <h3 class="timeline-company">Karşıyaka Belediyesi</h3>
+                        <ul class="timeline-points">
+                            <li>İkinci staj dönemimde daha ileri seviye projelerde yer aldım</li>
+                            <li>Belediye yazılım sistemlerinin geliştirilmesine katkıda bulundum</li>
+                            <li>Veritabanı yönetimi ve sistem optimizasyonu konularında deneyim kazandım</li>
+                        </ul>
+                        <div class="skills-tags">
+                            <span class="skill-tag">Veritabanı Yönetimi</span>
+                            <span class="skill-tag">Sistem Optimizasyonu</span>
+                            <span class="skill-tag">Yazılım Geliştirme</span>
+                        </div>
+                    </div>
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-line"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            mirror: false
+        });
+    </script>
+</body>
+</html>

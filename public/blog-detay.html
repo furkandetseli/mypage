@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Detay</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .blog-detail-section {
+            padding: 120px 0;
+            min-height: 100vh;
+        }
+
+        .blog-detail-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #112240;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px -15px rgba(2,12,27,0.7);
+            border: 1px solid #233554;
+        }
+
+        .blog-detail-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .blog-detail-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            border: 1px solid #233554;
+            transition: all 0.3s ease;
+        }
+
+        .blog-detail-image:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px -15px rgba(2,12,27,0.7);
+        }
+
+        .blog-detail-title {
+            color: #ccd6f6;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .blog-detail-meta {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #233554;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            color: #64ffda;
+            font-size: 0.9rem;
+        }
+
+        .meta-item i {
+            margin-right: 0.5rem;
+        }
+
+        .blog-detail-category {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .blog-detail-content {
+            color: #8892b0;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .blog-detail-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .blog-detail-content img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        .blog-detail-content a {
+            color: #64ffda;
+            text-decoration: none;
+            border-bottom: 1px dashed #64ffda;
+            transition: all 0.3s ease;
+        }
+
+        .blog-detail-content a:hover {
+            border-bottom-style: solid;
+        }
+
+        .blog-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #233554;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            color: #64ffda;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border: 1px solid #64ffda;
+            border-radius: 5px;
+        }
+
+        .nav-link:hover {
+            background: rgba(100, 255, 218, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-link i {
+            margin: 0 0.5rem;
+        }
+
+        .share-section {
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .share-title {
+            color: #ccd6f6;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .share-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #233554;
+            color: #64ffda;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .share-button:hover {
+            background: #64ffda;
+            color: #0a192f;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .blog-detail-container {
+                padding: 1.5rem;
+                margin: 0 1rem;
+            }
+
+            .blog-detail-title {
+                font-size: 2rem;
+            }
+
+            .blog-detail-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .blog-detail-image {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body style="padding-top: 80px;">
+    <div id="header"></div>
+
+    <section class="blog-detail-section">
+        <div class="blog-detail-container">
+            <article id="blog-content">
+                <!-- Blog içeriği dinamik olarak buraya yüklenecek -->
+            </article>
+        </div>
+    </section>
+
+    <script>
+        // Header'ı yükle
+        fetch('header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header').innerHTML = data;
+            });
+
+        const BASE_URL = 'http://localhost:5000/api';
+
+        // URL'den blog ID'sini al
+        const urlParams = new URLSearchParams(window.location.search);
+        const blogId = urlParams.get('id');
+
+        async function loadBlogDetail() {
+            try {
+                const response = await fetch(`${BASE_URL}/blogs/${blogId}`);
+                if (!response.ok) throw new Error('Blog bulunamadı');
+                
+                const blog = await response.json();
+                document.title = `${blog.title} - Blog Detay`;
+
+                const blogContent = document.getElementById('blog-content');
+                blogContent.innerHTML = `
+                    <header class="blog-detail-header">
+                        <h1 class="blog-detail-title">${blog.title}</h1>
+                        <div class="blog-detail-meta">
+                            <span class="meta-item">
+                                <i class="far fa-calendar"></i>
+                                ${new Date(blog.createdAt).toLocaleDateString('tr-TR')}
+                            </span>
+                            <span class="blog-detail-category">
+                                ${blog.category || 'Genel'}
+                            </span>
+                            <span class="meta-item">
+                                <i class="far fa-clock"></i>
+                                ${Math.ceil(blog.content.split(' ').length / 200)} dk okuma
+                            </span>
+                        </div>
+                    </header>
+
+                    <img src="${blog.image || '/images/default-blog.jpg'}" 
+                         alt="${blog.title}" 
+                         class="blog-detail-image">
+
+                    <div class="blog-detail-content">
+                        ${blog.content}
+                    </div>
+
+                    <div class="blog-navigation">
+                        <a href="#" class="nav-link prev-post" style="visibility: hidden;">
+                            <i class="fas fa-arrow-left"></i>
+                            Önceki Yazı
+                        </a>
+                        <a href="#" class="nav-link next-post" style="visibility: hidden;">
+                            Sonraki Yazı
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="share-section">
+                        <h3 class="share-title">Bu Yazıyı Paylaş</h3>
+                        <div class="share-buttons">
+                            <a href="#" class="share-button" onclick="shareOnTwitter()">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="share-button" onclick="shareOnLinkedIn()">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="share-button" onclick="shareOnFacebook()">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                // Önceki ve sonraki blog yazılarını yükle
+                loadAdjacentPosts(blog.id);
+            } catch (error) {
+                console.error('Hata:', error);
+                document.getElementById('blog-content').innerHTML = `
+                    <div style="text-align: center; padding: 3rem;">
+                        <h2 style="color: #ccd6f6; margin-bottom: 1rem;">Blog Yazısı Bulunamadı</h2>
+                        <p style="color: #8892b0;">İstediğiniz blog yazısına ulaşılamadı.</p>
+                        <a href="/blog.html" class="nav-link" style="display: inline-flex; margin-top: 1rem;">
+                            <i class="fas fa-arrow-left"></i>
+                            Blog Listesine Dön
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadAdjacentPosts(currentId) {
+            try {
+                const response = await fetch(`${BASE_URL}/blogs`);
+                if (!response.ok) throw new Error('Bloglar yüklenemedi');
+                
+                const blogs = await response.json();
+                const currentIndex = blogs.findIndex(blog => blog.id === currentId);
+                
+                if (currentIndex > 0) {
+                    const prevPost = blogs[currentIndex - 1];
+                    const prevLink = document.querySelector('.prev-post');
+                    prevLink.href = `/blog-detay.html?id=${prevPost.id}`;
+                    prevLink.style.visibility = 'visible';
+                }
+
+                if (currentIndex < blogs.length - 1) {
+                    const nextPost = blogs[currentIndex + 1];
+                    const nextLink = document.querySelector('.next-post');
+                    nextLink.href = `/blog-detay.html?id=${nextPost.id}`;
+                    nextLink.style.visibility = 'visible';
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+            }
+        }
+
+        // Sosyal medya paylaşım fonksiyonları
+        function shareOnTwitter() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent(document.title);
+            window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+        }
+
+        function shareOnLinkedIn() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+        }
+
+        function shareOnFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+
+        // Blog detayını yükle
+        if (blogId) {
+            loadBlogDetail();
+        } else {
+            window.location.href = '/blog.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <style>
+        .blog-section {
+            padding: 100px 0;
+            min-height: 100vh;
+        }
+
+        .blog-categories {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background: #112240;
+            color: #64ffda;
+            border: 1px solid #64ffda;
+            padding: 0.5rem 1.25rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .category-btn:hover {
+            background: rgba(100, 255, 218, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background: #64ffda;
+            color: #0a192f;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .blog-card {
+            background: #112240;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #233554;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-5px);
+            border-color: #64ffda;
+        }
+
+        .blog-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .blog-content {
+            padding: 1.5rem;
+        }
+
+        .blog-title {
+            color: #ccd6f6;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .blog-excerpt {
+            color: #8892b0;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .blog-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .blog-date {
+            color: #64ffda;
+        }
+
+        .blog-category {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+        }
+
+        .read-more {
+            display: inline-flex;
+            align-items: center;
+            color: #64ffda;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .read-more span {
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .read-more:hover span {
+            transform: translateX(5px);
+        }
+
+        .no-blogs-message {
+            text-align: center;
+            padding: 3rem;
+            background: #112240;
+            border-radius: 10px;
+            color: #8892b0;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .page-btn {
+            background: #112240;
+            color: #64ffda;
+            border: 1px solid #64ffda;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover {
+            background: rgba(100, 255, 218, 0.1);
+        }
+
+        .page-btn.active {
+            background: #64ffda;
+            color: #0a192f;
+        }
+
+        @media (max-width: 768px) {
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .blog-categories {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body style="padding-top: 80px;">
+    <div id="header-container"></div>
+
+    <section class="blog-section">
+        <div class="container">
+            <h1 class="section-title" data-aos="fade-up">Blog Yazıları</h1>
+
+            <div class="blog-categories" data-aos="fade-up" data-aos-delay="100">
+                <button class="category-btn active">Tümü</button>
+                <button class="category-btn">Teknoloji</button>
+                <button class="category-btn">Yazılım</button>
+                <button class="category-btn">Tasarım</button>
+            </div>
+
+            <div class="blog-grid" id="blog-list">
+                <!-- Blog kartları buraya dinamik olarak eklenecek -->
+            </div>
+
+            <div class="pagination" id="pagination" data-aos="fade-up">
+                <!-- Sayfalama butonları buraya dinamik olarak eklenecek -->
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // AOS'u başlat
+        AOS.init({
+            duration: 1000,
+            once: true,
+            mirror: false
+        });
+
+        // Header'ı yükle
+        fetch('header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header-container').innerHTML = data;
+            });
+
+        const BASE_URL = 'http://localhost:5000/api';
+        let blogs = [];
+        const itemsPerPage = 6;
+        let currentPage = 1;
+
+        async function fetchBlogs() {
+            try {
+                const response = await fetch(`${BASE_URL}/blogs`);
+                if (!response.ok) throw new Error('Bloglar yüklenemedi');
+                const data = await response.json();
+                
+                blogs = data.map(blog => ({
+                    id: blog.id,
+                    title: blog.title || 'Başlık Yok',
+                    content: blog.content || 'İçerik Yok',
+                    image: blog.image || '/images/default-blog.jpg',
+                    category: blog.category || 'Genel',
+                    excerpt: blog.excerpt || blog.content?.substring(0, 150) + '...' || '',
+                    date: new Date(blog.createdAt || Date.now()).toLocaleDateString('tr-TR')
+                }));
+
+                updateBlogList(blogs);
+            } catch (error) {
+                console.error('Hata:', error);
+                document.getElementById('blog-list').innerHTML = `
+                    <div class="no-blogs-message">
+                        <p>Blog yazıları yüklenirken bir hata oluştu.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateBlogList(blogs) {
+            const blogList = document.getElementById('blog-list');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedBlogs = blogs.slice(start, end);
+
+            if (blogs.length === 0) {
+                blogList.innerHTML = `
+                    <div class="no-blogs-message" data-aos="fade-up">
+                        <p>Henüz hiç blog yazısı eklenmemiş.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            blogList.innerHTML = '';
+            paginatedBlogs.forEach((blog, index) => {
+                const blogCard = document.createElement('div');
+                blogCard.className = 'blog-card';
+                blogCard.setAttribute('data-aos', 'fade-up');
+                blogCard.setAttribute('data-aos-delay', `${index * 100}`);
+                blogCard.innerHTML = `
+                    <img src="${blog.image}" alt="${blog.title}" class="blog-image">
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">${blog.date}</span>
+                            <span class="blog-category">${blog.category}</span>
+                        </div>
+                        <h2 class="blog-title">${blog.title}</h2>
+                        <p class="blog-excerpt">${blog.excerpt}</p>
+                        <a href="/blog-detay.html?id=${blog.id}" class="read-more">
+                            Devamını Oku
+                            <span>&rarr;</span>
+                        </a>
+                    </div>
+                `;
+                blogList.appendChild(blogCard);
+            });
+
+            updatePagination(Math.ceil(blogs.length / itemsPerPage));
+            // AOS'u yenile
+            AOS.refresh();
+        }
+
+        function updatePagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+
+            pagination.style.display = 'flex';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = 'page-btn';
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    updateBlogList(blogs);
+                    setActivePageButton();
+                });
+
+                pagination.appendChild(pageBtn);
+            }
+
+            setActivePageButton();
+        }
+
+        function setActivePageButton() {
+            const buttons = document.querySelectorAll('.page-btn');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+                if (Number(button.textContent) === currentPage) {
+                    button.classList.add('active');
+                }
+            });
+        }
+
+        let isFetching = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isFetching) {
+                isFetching = true;
+                fetchBlogs();
+            }
+        });
+    </script>
+</body>
+</html>

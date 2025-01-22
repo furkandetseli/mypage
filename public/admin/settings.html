@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayarlar - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+    <style>
+        .settings-card {
+            background: #112240;
+            border-radius: 10px;
+            border: 1px solid #233554;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-card h2 {
+            color: #ccd6f6;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #233554;
+        }
+
+        .color-picker {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: transparent;
+            width: 50px;
+            height: 50px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .color-picker::-webkit-color-swatch {
+            border-radius: 10px;
+            border: 2px solid #233554;
+        }
+
+        .color-picker::-moz-color-swatch {
+            border-radius: 10px;
+            border: 2px solid #233554;
+        }
+
+        .preview-box {
+            width: 100%;
+            height: 100px;
+            border-radius: 10px;
+            border: 2px solid #233554;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            color: #8892b0;
+        }
+
+        .social-input {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .social-input i {
+            width: 40px;
+            text-align: center;
+            color: #8892b0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #233554;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #8892b0;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #64ffda;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+            background-color: #0a192f;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">Admin Panel</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/admin/" class="nav-item">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="/admin/blog.html" class="nav-item">
+                <i class="fas fa-blog"></i>
+                Blog Yazıları
+            </a>
+            <a href="/admin/portfolio.html" class="nav-item">
+                <i class="fas fa-briefcase"></i>
+                Portfolyo
+            </a>
+            <a href="/admin/messages.html" class="nav-item">
+                <i class="fas fa-envelope"></i>
+                Mesajlar
+            </a>
+            <a href="/admin/settings.html" class="nav-item active">
+                <i class="fas fa-cog"></i>
+                Ayarlar
+            </a>
+            <a href="#" onclick="logout()" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                Çıkış Yap
+            </a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="content-header">
+            <h1>Ayarlar</h1>
+            <button onclick="saveAllSettings()" class="add-button">
+                <i class="fas fa-save"></i> Değişiklikleri Kaydet
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="settings-card">
+                <h2>Profil Ayarları</h2>
+                <div class="space-y-4">
+                    <div class="form-group">
+                        <label for="name">Ad Soyad</label>
+                        <input type="text" id="name" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Ünvan</label>
+                        <input type="text" id="title" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="about">Hakkımda</label>
+                        <textarea id="about" class="form-input" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-posta</label>
+                        <input type="email" id="email" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h2>Sosyal Medya Bağlantıları</h2>
+                <div class="space-y-4">
+                    <div class="social-input">
+                        <i class="fab fa-github"></i>
+                        <input type="text" id="github" class="form-input" placeholder="GitHub URL">
+                    </div>
+                    <div class="social-input">
+                        <i class="fab fa-linkedin"></i>
+                        <input type="text" id="linkedin" class="form-input" placeholder="LinkedIn URL">
+                    </div>
+                    <div class="social-input">
+                        <i class="fab fa-twitter"></i>
+                        <input type="text" id="twitter" class="form-input" placeholder="Twitter URL">
+                    </div>
+                    <div class="social-input">
+                        <i class="fab fa-instagram"></i>
+                        <input type="text" id="instagram" class="form-input" placeholder="Instagram URL">
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h2>Tema Ayarları</h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label>Ana Renk</label>
+                            <input type="color" id="primaryColor" class="color-picker" value="#64ffda">
+                        </div>
+                        <div>
+                            <label>Arkaplan Rengi</label>
+                            <input type="color" id="backgroundColor" class="color-picker" value="#0a192f">
+                        </div>
+                    </div>
+                    <div class="preview-box" id="themePreview">
+                        Tema Önizleme
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h2>Genel Ayarlar</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <label>Blog Yorumları</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableComments">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <label>E-posta Bildirimleri</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableNotifications">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <label>Bakım Modu</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="maintenanceMode">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-card col-span-full">
+                <h2>Güvenlik</h2>
+                <div class="space-y-4">
+                    <div class="form-group">
+                        <label for="currentPassword">Mevcut Şifre</label>
+                        <input type="password" id="currentPassword" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Yeni Şifre</label>
+                        <input type="password" id="newPassword" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="confirmPassword" class="form-input">
+                    </div>
+                    <button onclick="changePassword()" class="btn-primary">
+                        Şifreyi Değiştir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const BASE_URL = window.location.origin + '/api';
+        const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
+        let currentSettings = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!document.cookie.includes('isLoggedIn=true')) {
+                window.location.href = '/admin/login.html';
+                return;
+            }
+            loadSettings();
+            initializeColorPickers();
+        });
+
+        async function loadSettings() {
+            try {
+                const response = await fetch(`${BASE_URL}/settings`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Ayarlar yüklenemedi');
+                
+                currentSettings = await response.json();
+                
+                // Form alanlarını doldur
+                document.getElementById('name').value = currentSettings.name || '';
+                document.getElementById('title').value = currentSettings.title || '';
+                document.getElementById('about').value = currentSettings.about || '';
+                document.getElementById('email').value = currentSettings.email || '';
+                
+                // Sosyal medya
+                document.getElementById('github').value = currentSettings.social?.github || '';
+                document.getElementById('linkedin').value = currentSettings.social?.linkedin || '';
+                document.getElementById('twitter').value = currentSettings.social?.twitter || '';
+                document.getElementById('instagram').value = currentSettings.social?.instagram || '';
+                
+                // Tema
+                document.getElementById('primaryColor').value = currentSettings.theme?.primaryColor || '#64ffda';
+                document.getElementById('backgroundColor').value = currentSettings.theme?.backgroundColor || '#0a192f';
+                
+                // Genel ayarlar
+                document.getElementById('enableComments').checked = currentSettings.enableComments || false;
+                document.getElementById('enableNotifications').checked = currentSettings.enableNotifications || false;
+                document.getElementById('maintenanceMode').checked = currentSettings.maintenanceMode || false;
+                
+                updateThemePreview();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Ayarlar yüklenirken hata oluştu');
+            }
+        }
+
+        function initializeColorPickers() {
+            const colorPickers = document.querySelectorAll('.color-picker');
+            colorPickers.forEach(picker => {
+                picker.addEventListener('input', updateThemePreview);
+            });
+        }
+
+        function updateThemePreview() {
+            const preview = document.getElementById('themePreview');
+            const primaryColor = document.getElementById('primaryColor').value;
+            const backgroundColor = document.getElementById('backgroundColor').value;
+            
+            preview.style.backgroundColor = backgroundColor;
+            preview.style.color = primaryColor;
+            preview.style.borderColor = primaryColor;
+        }
+
+        async function saveAllSettings() {
+            try {
+                const settings = {
+                    name: document.getElementById('name').value,
+                    title: document.getElementById('title').value,
+                    about: document.getElementById('about').value,
+                    email: document.getElementById('email').value,
+                    social: {
+                        github: document.getElementById('github').value,
+                        linkedin: document.getElementById('linkedin').value,
+                        twitter: document.getElementById('twitter').value,
+                        instagram: document.getElementById('instagram').value
+                    },
+                    theme: {
+                        primaryColor: document.getElementById('primaryColor').value,
+                        backgroundColor: document.getElementById('backgroundColor').value
+                    },
+                    enableComments: document.getElementById('enableComments').checked,
+                    enableNotifications: document.getElementById('enableNotifications').checked,
+                    maintenanceMode: document.getElementById('maintenanceMode').checked
+                };
+
+                const response = await fetch(`${BASE_URL}/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (!response.ok) throw new Error('Ayarlar kaydedilemedi');
+
+                alert('Ayarlar başarıyla kaydedildi!');
+                currentSettings = settings;
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Ayarlar kaydedilirken hata oluştu');
+            }
+        }
+
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('Lütfen tüm şifre alanlarını doldurun');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('Yeni şifreler eşleşmiyor');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    },
+                    body: JSON.stringify({
+                        currentPassword,
+                        newPassword
+                    })
+                });
+
+                if (!response.ok) throw new Error('Şifre değiştirilemedi');
+
+                alert('Şifre başarıyla değiştirildi!');
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Şifre değiştirilirken hata oluştu');
+            }
+        }
+
+        function logout() {
+            document.cookie = 'isLoggedIn=false; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+            window.location.href = '/admin/login.html';
+        }
+    </script>
+</body>
+</html> 

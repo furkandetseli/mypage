@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Paneli</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fc;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #1a1f2c;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-title {
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .nav-item i {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1a1f2c;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+            color: #1a1f2c;
+        }
+
+        .table-row {
+            transition: all 0.3s ease;
+        }
+
+        .table-row:hover {
+            background-color: #f1f3f9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #edf2f7;
+            color: #4a5568;
+        }
+
+        /* Button Styles */
+        .action-button {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-button.edit:hover {
+            color: #3b82f6 !important;
+        }
+
+        .action-button.delete:hover {
+            color: #ef4444 !important;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 400px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #1a1f2c;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal active">
+        <div class="modal-content max-w-sm">
+            <h2 class="text-xl font-semibold mb-4">Admin Girişi</h2>
+            <form id="loginForm" class="space-y-4">
+                <div class="form-group">
+                    <label for="password" class="form-label">Şifre</label>
+                    <input type="password" id="password" class="form-input" required>
+                </div>
+                <button type="submit" class="submit-button w-full">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Giriş Yap
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content (Initially Hidden) -->
+    <div id="adminContent" class="hidden">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">Admin Paneli</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-blog"></i>
+                    Blog Yönetimi
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-project-diagram"></i>
+                    Projeler
+                </a>
+                <a href="#" class="nav-item" onclick="showPortfolioSection()">
+                    <i class="fas fa-briefcase"></i>
+                    Portfolyo
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user"></i>
+                    Profil
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    Ayarlar
+                </a>
+            </nav>
+        </div>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Blog Yazıları</h1>
+            </div>
+
+            <div class="card">
+                <form id="blogForm" class="mb-8">
+                    <div class="form-group">
+                        <label class="form-label" for="title">Başlık</label>
+                        <input type="text" id="title" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="content">İçerik</label>
+                        <textarea id="content" class="form-input" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="image">Resim</label>
+                        <input type="file" id="image" class="form-input" accept="image/*">
+                    </div>
+                    <button type="submit" class="submit-button">
+                        <i class="fas fa-plus mr-2"></i>
+                        Blog Ekle
+                    </button>
+                </form>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Başlık</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blogList">
+                        <!-- Blog listesi buraya dinamik olarak eklenecek -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-xl font-semibold mb-4">Blog Düzenle</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label class="form-label" for="editTitle">Başlık</label>
+                    <input type="text" id="editTitle" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editContent">İçerik</label>
+                    <textarea id="editContent" class="form-input" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editImage">Yeni Resim (İsteğe bağlı)</label>
+                    <input type="file" id="editImage" class="form-input" accept="image/*">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        İptal
+                    </button>
+                    <button type="button" onclick="saveBlogChanges()" class="submit-button">
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Portfolyo section'ını ekle -->
+    <div id="portfolioSection" class="section hidden">
+        <div class="section-header">
+            <h2>Portfolyo Yönetimi</h2>
+            <button onclick="showAddPortfolioModal()" class="add-button">
+                <i class="fas fa-plus"></i> Yeni Proje
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th>Başlık</th>
+                        <th>Kategori</th>
+                        <th>Teknolojiler</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="portfolioList">
+                    <!-- Portfolyo listesi buraya gelecek -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Portfolyo Ekleme/Düzenleme Modal -->
+    <div id="portfolioModal" class="modal">
+        <div class="modal-content">
+            <h2 id="portfolioModalTitle">Yeni Proje Ekle</h2>
+            <form id="portfolioForm" onsubmit="savePortfolio(event)">
+                <div class="form-group">
+                    <label for="portfolioTitle">Başlık</label>
+                    <input type="text" id="portfolioTitle" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="portfolioDescription">Açıklama</label>
+                    <textarea id="portfolioDescription" required class="form-input"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="portfolioCategory">Kategori</label>
+                    <input type="text" id="portfolioCategory" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="portfolioTechnologies">Teknolojiler (virgülle ayırın)</label>
+                    <input type="text" id="portfolioTechnologies" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="portfolioImage">Görsel</label>
+                    <input type="file" id="portfolioImage" accept="image/*" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="projectUrl">Proje URL</label>
+                    <input type="url" id="projectUrl" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="githubUrl">GitHub URL</label>
+                    <input type="url" id="githubUrl" class="form-input">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" onclick="closePortfolioModal()" class="cancel-button">İptal</button>
+                    <button type="submit" class="submit-button">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin + '/api';
+        const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
+        let currentEditId = null;
+        let currentPortfolioId = null;
+
+        // Login işlemi
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            
+            if (password === 'admin123') { // Örnek şifre
+                document.cookie = 'isLoggedIn=true; path=/';
+                document.getElementById('loginModal').classList.remove('active');
+                document.getElementById('adminContent').classList.remove('hidden');
+                loadBlogs(); // Blog listesini yükle
+            } else {
+                alert('Hatalı şifre!');
+            }
+        });
+
+        // Sayfa yüklendiğinde login kontrolü
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.cookie.includes('isLoggedIn=true')) {
+                document.getElementById('loginModal').classList.remove('active');
+                document.getElementById('adminContent').classList.remove('hidden');
+                loadBlogs();
+            }
+        });
+
+        // Çıkış yapma fonksiyonu
+        function logout() {
+            document.cookie = 'isLoggedIn=false; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+            document.getElementById('loginModal').classList.add('active');
+            document.getElementById('adminContent').classList.add('hidden');
+        }
+
+        // Load blogs
+        async function loadBlogs() {
+            try {
+                const response = await fetch(`${BASE_URL}/blogs`);
+                if (!response.ok) throw new Error('Bloglar yüklenemedi');
+                
+                const blogs = await response.json();
+                renderBlogs(blogs);
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Bloglar yüklenirken bir hata oluştu');
+            }
+        }
+
+        // Render blogs
+        function renderBlogs(blogs) {
+            const blogList = document.getElementById('blogList');
+            blogList.innerHTML = blogs.map(blog => `
+                <tr class="table-row">
+                    <td class="px-6 py-4">${blog.title}</td>
+                    <td class="px-6 py-4">${new Date(blog.date).toLocaleDateString()}</td>
+                    <td class="px-6 py-4 space-x-2">
+                        <button onclick="editBlog('${blog.id}')" 
+                                class="action-button edit text-blue-500">
+                            <i class="fas fa-edit text-lg"></i>
+                        </button>
+                        <button onclick="deleteBlog('${blog.id}')" 
+                                class="action-button delete text-red-500">
+                            <i class="fas fa-trash text-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Add new blog
+        document.getElementById('blogForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const imageFile = document.getElementById('image').files[0];
+
+            if (!title || !content) {
+                alert('Başlık ve içerik zorunludur!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            if (imageFile) formData.append('image', imageFile);
+
+            try {
+                const response = await fetch(`${BASE_URL}/blogs`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Blog eklenemedi');
+
+                alert('Blog başarıyla eklendi!');
+                resetForm();
+                loadBlogs();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Blog eklenirken hata oluştu');
+            }
+        });
+
+        // Delete blog
+        async function deleteBlog(id) {
+            if (!confirm('Bu blogu silmek istediğinizden emin misiniz?')) return;
+
+            try {
+                const response = await fetch(`${BASE_URL}/blogs/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Blog silinemedi');
+
+                alert('Blog başarıyla silindi!');
+                loadBlogs();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Blog silinirken hata oluştu');
+            }
+        }
+
+        // Edit blog
+        async function editBlog(id) {
+            try {
+                const response = await fetch(`${BASE_URL}/blogs/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Blog bilgileri alınamadı');
+                
+                const blog = await response.json();
+                currentEditId = id;
+                document.getElementById('editTitle').value = blog.title;
+                document.getElementById('editContent').value = blog.content;
+                document.getElementById('editModal').classList.add('active');
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Blog bilgileri yüklenirken hata oluştu');
+            }
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            currentEditId = null;
+        }
+
+        // Save blog changes
+        async function saveBlogChanges() {
+            if (!currentEditId) return;
+            
+            const title = document.getElementById('editTitle').value;
+            const content = document.getElementById('editContent').value;
+            const imageFile = document.getElementById('editImage').files[0];
+
+            if (!title || !content) {
+                alert('Başlık ve içerik zorunludur!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            if (imageFile) formData.append('image', imageFile);
+
+            try {
+                const response = await fetch(`${BASE_URL}/blogs/${currentEditId}`, {
+                    method: 'PUT',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Blog güncellenemedi');
+
+                alert('Blog başarıyla güncellendi!');
+                closeEditModal();
+                loadBlogs();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Blog güncellenirken hata oluştu');
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+            document.getElementById('image').value = '';
+        }
+
+        function showPortfolioSection() {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('portfolioSection').classList.remove('hidden');
+            loadPortfolios();
+        }
+
+        async function loadPortfolios() {
+            try {
+                console.log('Portfolyolar yükleniyor... URL:', `${BASE_URL}/portfolios`);
+                const response = await fetch(`${BASE_URL}/portfolios`);
+                
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Portfolyo listesi alınamadı');
+                    } else {
+                        const text = await response.text();
+                        console.error('Sunucu yanıtı (text):', text);
+                        throw new Error('Sunucudan geçersiz yanıt alındı');
+                    }
+                }
+                
+                const portfolios = await response.json();
+                console.log('Yüklenen portfolyolar:', portfolios);
+                
+                const portfolioList = document.getElementById('portfolioList');
+                
+                if (!portfolios || portfolios.length === 0) {
+                    portfolioList.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-4">
+                                Henüz portfolyo bulunmamaktadır.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                portfolioList.innerHTML = portfolios.map(portfolio => `
+                    <tr class="table-row">
+                        <td>${portfolio.title || ''}</td>
+                        <td>${portfolio.category || ''}</td>
+                        <td>${Array.isArray(portfolio.technologies) ? portfolio.technologies.join(', ') : portfolio.technologies || ''}</td>
+                        <td>
+                            <button onclick="editPortfolio(${portfolio.id})" class="action-button edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deletePortfolio(${portfolio.id})" class="action-button delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Portfolyo yükleme hatası:', error);
+                alert(`Portfolyo listesi yüklenirken hata oluştu: ${error.message}`);
+            }
+        }
+
+        function showAddPortfolioModal() {
+            currentPortfolioId = null;
+            document.getElementById('portfolioModalTitle').textContent = 'Yeni Proje Ekle';
+            document.getElementById('portfolioForm').reset();
+            document.getElementById('portfolioModal').classList.add('active');
+        }
+
+        function closePortfolioModal() {
+            document.getElementById('portfolioModal').classList.remove('active');
+            currentPortfolioId = null;
+        }
+
+        async function savePortfolio(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('title', document.getElementById('portfolioTitle').value);
+            formData.append('description', document.getElementById('portfolioDescription').value);
+            formData.append('category', document.getElementById('portfolioCategory').value);
+            formData.append('technologies', document.getElementById('portfolioTechnologies').value);
+            formData.append('projectUrl', document.getElementById('projectUrl').value);
+            formData.append('githubUrl', document.getElementById('githubUrl').value);
+            
+            const imageFile = document.getElementById('portfolioImage').files[0];
+            if (imageFile) formData.append('image', imageFile);
+
+            try {
+                const url = currentPortfolioId 
+                    ? `${BASE_URL}/portfolios/${currentPortfolioId}`
+                    : `${BASE_URL}/portfolios`;
+                    
+                const method = currentPortfolioId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Portfolyo kaydedilemedi');
+
+                alert(currentPortfolioId ? 'Proje güncellendi!' : 'Yeni proje eklendi!');
+                closePortfolioModal();
+                loadPortfolios();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Portfolyo kaydedilirken hata oluştu');
+            }
+        }
+
+        async function editPortfolio(id) {
+            try {
+                const response = await fetch(`${BASE_URL}/portfolios/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Portfolyo bilgileri alınamadı');
+                
+                const portfolio = await response.json();
+                currentPortfolioId = id;
+                
+                document.getElementById('portfolioModalTitle').textContent = 'Projeyi Düzenle';
+                document.getElementById('portfolioTitle').value = portfolio.title;
+                document.getElementById('portfolioDescription').value = portfolio.description;
+                document.getElementById('portfolioCategory').value = portfolio.category;
+                document.getElementById('portfolioTechnologies').value = portfolio.technologies.join(',');
+                document.getElementById('projectUrl').value = portfolio.projectUrl || '';
+                document.getElementById('githubUrl').value = portfolio.githubUrl || '';
+                
+                document.getElementById('portfolioModal').classList.add('active');
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Portfolyo bilgileri yüklenirken hata oluştu');
+            }
+        }
+
+        async function deletePortfolio(id) {
+            if (!confirm('Bu projeyi silmek istediğinizden emin misiniz?')) return;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/portfolios/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Portfolyo silinemedi');
+
+                alert('Proje başarıyla silindi!');
+                loadPortfolios();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Portfolyo silinirken hata oluştu');
+            }
+        }
+    </script>
+</body>
+</html>

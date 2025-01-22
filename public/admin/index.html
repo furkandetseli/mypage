@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #112240;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid #233554;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #64ffda;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .recent-items {
+            background: #112240;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid #233554;
+        }
+
+        .activity-item {
+            padding: 1rem;
+            border-bottom: 1px solid #233554;
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item:hover {
+            background: rgba(100, 255, 218, 0.05);
+        }
+
+        .chart-container {
+            background: #112240;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid #233554;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">Admin Panel</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/admin/" class="nav-item active">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="/admin/blog.html" class="nav-item">
+                <i class="fas fa-blog"></i>
+                Blog Yazıları
+            </a>
+            <a href="/admin/portfolio.html" class="nav-item">
+                <i class="fas fa-briefcase"></i>
+                Portfolyo
+            </a>
+            <a href="/admin/messages.html" class="nav-item">
+                <i class="fas fa-envelope"></i>
+                Mesajlar
+            </a>
+            <a href="/admin/settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                Ayarlar
+            </a>
+            <a href="#" onclick="logout()" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                Çıkış Yap
+            </a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="content-header">
+            <h1>Dashboard</h1>
+            <div class="header-actions">
+                <span class="text-gray-400">Son güncelleme: <span id="lastUpdate"></span></span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                    <i class="fas fa-blog"></i>
+                </div>
+                <h3 class="text-gray-400 text-sm">Blog Yazıları</h3>
+                <p class="text-2xl font-semibold text-white mt-2" id="blogCount">0</p>
+                <p class="text-sm text-gray-400 mt-2">
+                    <span class="text-green-400"><i class="fas fa-arrow-up"></i> +5%</span>
+                    geçen aya göre
+                </p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(100, 255, 218, 0.1); color: #64ffda;">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <h3 class="text-gray-400 text-sm">Portfolyo Projeleri</h3>
+                <p class="text-2xl font-semibold text-white mt-2" id="portfolioCount">0</p>
+                <p class="text-sm text-gray-400 mt-2">
+                    <span class="text-green-400"><i class="fas fa-arrow-up"></i> +2%</span>
+                    geçen aya göre
+                </p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3 class="text-gray-400 text-sm">Yeni Mesajlar</h3>
+                <p class="text-2xl font-semibold text-white mt-2" id="messageCount">0</p>
+                <p class="text-sm text-gray-400 mt-2">
+                    <span class="text-red-400"><i class="fas fa-arrow-down"></i> -3%</span>
+                    geçen aya göre
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="recent-items">
+                <h2 class="text-xl font-semibold text-white mb-4">Son Blog Yazıları</h2>
+                <div id="recentBlogs" class="space-y-4">
+                    <!-- Recent blogs will be loaded here -->
+                </div>
+            </div>
+
+            <div class="recent-items">
+                <h2 class="text-xl font-semibold text-white mb-4">Son Mesajlar</h2>
+                <div id="recentMessages" class="space-y-4">
+                    <!-- Recent messages will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2 class="text-xl font-semibold text-white mb-4">Aylık İstatistikler</h2>
+            <canvas id="statsChart"></canvas>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const BASE_URL = window.location.origin + '/api';
+        const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!document.cookie.includes('isLoggedIn=true')) {
+                window.location.href = '/admin/login.html';
+                return;
+            }
+            loadDashboardData();
+            initializeChart();
+            updateLastUpdate();
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load counts
+                const [blogs, portfolios, messages] = await Promise.all([
+                    fetch(`${BASE_URL}/blogs`).then(r => r.json()),
+                    fetch(`${BASE_URL}/portfolios`).then(r => r.json()),
+                    fetch(`${BASE_URL}/messages`).then(r => r.json())
+                ]);
+
+                document.getElementById('blogCount').textContent = blogs.length;
+                document.getElementById('portfolioCount').textContent = portfolios.length;
+                document.getElementById('messageCount').textContent = messages.length;
+
+                // Load recent blogs
+                const recentBlogsHtml = blogs.slice(0, 5).map(blog => `
+                    <div class="activity-item">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-white font-medium">${blog.title}</h3>
+                                <p class="text-gray-400 text-sm mt-1">
+                                    ${new Date(blog.created_at).toLocaleDateString('tr-TR')}
+                                </p>
+                            </div>
+                            <a href="/admin/blog.html" class="text-blue-400 hover:text-blue-300">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('recentBlogs').innerHTML = recentBlogsHtml;
+
+                // Load recent messages
+                const recentMessagesHtml = messages.slice(0, 5).map(message => `
+                    <div class="activity-item">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-white font-medium">${message.name}</h3>
+                                <p class="text-gray-400 text-sm mt-1">${message.email}</p>
+                                <p class="text-gray-400 text-sm mt-1">
+                                    ${new Date(message.created_at).toLocaleDateString('tr-TR')}
+                                </p>
+                            </div>
+                            <a href="/admin/messages.html" class="text-blue-400 hover:text-blue-300">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('recentMessages').innerHTML = recentMessagesHtml;
+
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Veriler yüklenirken hata oluştu');
+            }
+        }
+
+        function initializeChart() {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'],
+                    datasets: [{
+                        label: 'Blog Görüntülenme',
+                        data: [65, 59, 80, 81, 56, 55],
+                        borderColor: '#6366f1',
+                        tension: 0.4
+                    }, {
+                        label: 'Portfolyo Görüntülenme',
+                        data: [28, 48, 40, 19, 86, 27],
+                        borderColor: '#64ffda',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#ccd6f6'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#233554'
+                            },
+                            ticks: {
+                                color: '#8892b0'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#233554'
+                            },
+                            ticks: {
+                                color: '#8892b0'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateLastUpdate() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = 
+                now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR');
+        }
+
+        function logout() {
+            document.cookie = 'isLoggedIn=false; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+            window.location.href = '/admin/login.html';
+        }
+    </script>
+</body>
+</html> 

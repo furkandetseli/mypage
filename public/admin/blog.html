@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Yönetimi - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+    <style>
+        .blog-card {
+            background: #112240;
+            border-radius: 10px;
+            border: 1px solid #233554;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-2px);
+            border-color: #64ffda;
+        }
+
+        .blog-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .blog-content {
+            padding: 1rem;
+        }
+
+        .blog-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-badge {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem 0;
+        }
+
+        .ql-editor {
+            min-height: 200px;
+            background: #1e293b;
+            color: #ccd6f6;
+        }
+
+        .ql-toolbar {
+            background: #112240;
+            border-color: #233554 !important;
+        }
+
+        .ql-toolbar button {
+            color: #ccd6f6 !important;
+        }
+
+        .ql-toolbar button:hover {
+            color: #64ffda !important;
+        }
+
+        .ql-snow.ql-toolbar button:hover .ql-stroke,
+        .ql-snow .ql-toolbar button:hover .ql-stroke {
+            stroke: #64ffda !important;
+        }
+
+        .ql-snow.ql-toolbar button:hover .ql-fill,
+        .ql-snow .ql-toolbar button:hover .ql-fill {
+            fill: #64ffda !important;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-button {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            background: #112240;
+            color: #8892b0;
+            border: 1px solid #233554;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-button.active {
+            background: #64ffda;
+            color: #0a192f;
+            border-color: #64ffda;
+        }
+    </style>
+</head>
+<body class="bg-navy">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">Admin Panel</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/admin" class="nav-item">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="/admin/portfolio.html" class="nav-item">
+                <i class="fas fa-briefcase"></i>
+                Portfolyo
+            </a>
+            <a href="/admin/blog.html" class="nav-item active">
+                <i class="fas fa-blog"></i>
+                Blog
+            </a>
+            <a href="/admin/messages.html" class="nav-item">
+                <i class="fas fa-envelope"></i>
+                Mesajlar
+            </a>
+            <a href="/admin/settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                Ayarlar
+            </a>
+            <a href="#" onclick="logout()" class="nav-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i>
+                Çıkış
+            </a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="content-header">
+            <h1>Blog Yazıları</h1>
+            <button onclick="showAddModal()" class="add-button">
+                <i class="fas fa-plus mr-2"></i>
+                Yeni Blog Yazısı
+            </button>
+        </div>
+
+        <div class="filter-section">
+            <div class="flex space-x-2">
+                <button onclick="filterByCategory('all')" class="category-filter active">
+                    Tümü
+                </button>
+                <button onclick="filterByCategory('Genel')" class="category-filter">
+                    Genel
+                </button>
+                <button onclick="filterByCategory('Teknoloji')" class="category-filter">
+                    Teknoloji
+                </button>
+                <button onclick="filterByCategory('Yazılım')" class="category-filter">
+                    Yazılım
+                </button>
+            </div>
+        </div>
+
+        <div class="blog-container">
+            <div id="blogGrid" class="blog-grid">
+                <!-- Blog posts will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Blog Post Modal -->
+    <div id="blogModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle" class="modal-title">Yeni Blog Yazısı</h2>
+                <button onclick="closeModal()" class="close-button">&times;</button>
+            </div>
+            <form id="blogForm" onsubmit="saveBlog(event)">
+                <div class="form-group">
+                    <label for="title">Başlık</label>
+                    <input type="text" id="title" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Kategori</label>
+                    <input type="text" id="category" class="form-input" value="Genel">
+                </div>
+                <div class="form-group">
+                    <label for="excerpt">Özet</label>
+                    <textarea id="excerpt" class="form-input" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>İçerik</label>
+                    <div id="editor" style="height: 300px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="image">Görsel</label>
+                    <input type="file" id="image" class="form-input" accept="image/*">
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal()" class="btn-secondary">
+                        İptal
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+        const BASE_URL = window.location.origin + '/api';
+        const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
+        let currentBlogs = [];
+        let currentEditId = null;
+        let quill;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!document.cookie.includes('isLoggedIn=true')) {
+                window.location.href = '/admin/login.html';
+                return;
+            }
+
+            // Initialize Quill editor
+            quill = new Quill('#editor', {
+                theme: 'snow',
+                placeholder: 'İçerik yazın...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', 'code-block'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'script': 'sub'}, { 'script': 'super' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            loadBlogs();
+        });
+
+        async function loadBlogs() {
+            try {
+                console.log('Blog yazıları yükleniyor...');
+                const response = await fetch(`${BASE_URL}/blogs`);
+                
+                if (!response.ok) {
+                    console.error('Sunucu yanıtı:', response.status, response.statusText);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Blog yazıları yüklenemedi');
+                }
+                
+                const blogs = await response.json();
+                console.log('Yüklenen blog yazıları:', blogs);
+                
+                currentBlogs = blogs;
+                renderBlogs(blogs);
+                
+                // İlk yüklemede 'Tümü' filtresini aktif et
+                document.querySelector('.category-filter').classList.add('active');
+            } catch (error) {
+                console.error('Hata:', error);
+                const blogGrid = document.getElementById('blogGrid');
+                if (blogGrid) {
+                    blogGrid.innerHTML = `
+                        <div class="text-center text-red-500 p-4">
+                            Blog yazıları yüklenirken bir hata oluştu: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function renderBlogs(blogs) {
+            const blogGrid = document.getElementById('blogGrid');
+            if (!blogGrid) {
+                console.error('blogGrid elementi bulunamadı');
+                return;
+            }
+
+            if (!blogs || blogs.length === 0) {
+                blogGrid.innerHTML = `
+                    <div class="text-center text-gray-500 p-4">
+                        Henüz blog yazısı bulunmuyor.
+                    </div>
+                `;
+                return;
+            }
+
+            blogGrid.innerHTML = blogs.map(blog => `
+                <div class="blog-card">
+                    ${blog.image ? `
+                        <img src="${blog.image}" alt="${blog.title}" class="blog-image">
+                    ` : ''}
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="category-badge">${blog.category}</span>
+                            <span class="text-sm text-gray-400">
+                                ${new Date(blog.date || blog.created_at).toLocaleDateString('tr-TR')}
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">${blog.title}</h3>
+                        <p class="text-gray-400 mb-4">${blog.excerpt || ''}</p>
+                        <div class="flex justify-end space-x-2">
+                            <button onclick="editBlog(${blog.id})" class="text-blue-400 hover:text-blue-300">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteBlog(${blog.id})" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterByCategory(category) {
+            // Aktif kategori butonunu güncelle
+            document.querySelectorAll('.category-filter').forEach(button => {
+                button.classList.remove('active');
+                if (button.textContent.trim() === category || 
+                   (category === 'all' && button.textContent.trim() === 'Tümü')) {
+                    button.classList.add('active');
+                }
+            });
+
+            // Blogları filtrele
+            const filteredBlogs = category === 'all' 
+                ? currentBlogs 
+                : currentBlogs.filter(blog => blog.category === category);
+
+            // Filtrelenmiş blogları göster
+            renderBlogs(filteredBlogs);
+        }
+
+        function showAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'Yeni Blog Yazısı';
+            document.getElementById('blogForm').reset();
+            quill.root.innerHTML = '';
+            document.getElementById('blogModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('blogModal').classList.remove('active');
+            currentEditId = null;
+        }
+
+        async function saveBlog(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('title', document.getElementById('title').value);
+            formData.append('excerpt', document.getElementById('excerpt').value);
+            formData.append('category', document.getElementById('category').value);
+            formData.append('content', quill.root.innerHTML);
+            formData.append('date', new Date().toISOString());
+
+            const imageFile = document.getElementById('image').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            try {
+                const url = currentEditId 
+                    ? `${BASE_URL}/blogs/${currentEditId}`
+                    : `${BASE_URL}/blogs`;
+                    
+                const method = currentEditId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Blog yazısı kaydedilemedi');
+
+                alert(currentEditId ? 'Blog yazısı güncellendi!' : 'Yeni blog yazısı eklendi!');
+                closeModal();
+                loadBlogs();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Blog yazısı kaydedilirken hata oluştu');
+            }
+        }
+
+        async function editBlog(id) {
+            try {
+                const response = await fetch(`${BASE_URL}/blogs/${id}`);
+                if (!response.ok) throw new Error('Blog yazısı bilgileri alınamadı');
+                
+                const blog = await response.json();
+                currentEditId = id;
+                
+                document.getElementById('modalTitle').textContent = 'Blog Yazısını Düzenle';
+                document.getElementById('title').value = blog.title;
+                document.getElementById('excerpt').value = blog.excerpt || '';
+                document.getElementById('category').value = blog.category;
+                quill.root.innerHTML = blog.content;
+                
+                document.getElementById('blogModal').classList.add('active');
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Blog yazısı bilgileri yüklenirken hata oluştu');
+            }
+        }
+
+        async function deleteBlog(id) {
+            if (!confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) return;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/blogs/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Blog yazısı silinemedi');
+
+                alert('Blog yazısı başarıyla silindi!');
+                loadBlogs();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Blog yazısı silinirken hata oluştu');
+            }
+        }
+
+        function logout() {
+            document.cookie = 'isLoggedIn=false; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+            window.location.href = '/admin/login.html';
+        }
+    </script>
+</body>
+</html> 

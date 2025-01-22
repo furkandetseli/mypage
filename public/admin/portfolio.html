@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolyo Yönetimi - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+    <style>
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .portfolio-card {
+            background: #112240;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #233554;
+            transition: all 0.3s ease;
+        }
+
+        .portfolio-card:hover {
+            transform: translateY(-5px);
+            border-color: #64ffda;
+        }
+
+        .portfolio-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .portfolio-content {
+            padding: 1rem;
+        }
+
+        .tech-tag {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin: 0.25rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">Admin Panel</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/admin/" class="nav-item">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="/admin/blog.html" class="nav-item">
+                <i class="fas fa-blog"></i>
+                Blog Yazıları
+            </a>
+            <a href="/admin/portfolio.html" class="nav-item active">
+                <i class="fas fa-briefcase"></i>
+                Portfolyo
+            </a>
+            <a href="/admin/messages.html" class="nav-item">
+                <i class="fas fa-envelope"></i>
+                Mesajlar
+            </a>
+            <a href="/admin/settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                Ayarlar
+            </a>
+            <a href="#" onclick="logout()" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                Çıkış Yap
+            </a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="content-header">
+            <h1>Portfolyo Yönetimi</h1>
+            <button onclick="showAddModal()" class="add-button">
+                <i class="fas fa-plus"></i> Yeni Proje
+            </button>
+        </div>
+
+        <div class="portfolio-grid" id="portfolioList">
+            <!-- Portfolyo kartları buraya dinamik olarak eklenecek -->
+        </div>
+    </main>
+
+    <!-- Portfolyo Ekleme/Düzenleme Modal -->
+    <div id="portfolioModal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="modal-header">
+                <h2 id="modalTitle">Yeni Proje Ekle</h2>
+                <button onclick="closeModal()" class="close-button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="portfolioForm" onsubmit="savePortfolio(event)" class="space-y-4">
+                <div class="form-group">
+                    <label for="title">Proje Başlığı</label>
+                    <input type="text" id="title" required class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Proje Açıklaması</label>
+                    <textarea id="description" required class="form-input" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Kategori</label>
+                    <select id="category" required class="form-input">
+                        <option value="Web Geliştirme">Web Geliştirme</option>
+                        <option value="Mobil Uygulama">Mobil Uygulama</option>
+                        <option value="UI/UX Tasarım">UI/UX Tasarım</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="technologies">Teknolojiler (virgülle ayırın)</label>
+                    <input type="text" id="technologies" required class="form-input" 
+                           placeholder="örn: React, Node.js, MongoDB">
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Proje Görseli</label>
+                    <input type="file" id="image" accept="image/*" class="form-input">
+                    <div id="currentImage" class="mt-2 hidden">
+                        <img src="" alt="Mevcut görsel" class="h-32 object-cover rounded">
+                        <button type="button" onclick="removeImage()" class="text-red-500 text-sm mt-1">
+                            Görseli Kaldır
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="projectUrl">Proje URL</label>
+                        <input type="url" id="projectUrl" class="form-input" 
+                               placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="githubUrl">GitHub URL</label>
+                        <input type="url" id="githubUrl" class="form-input" 
+                               placeholder="https://github.com/...">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal()" class="cancel-button">
+                        İptal
+                    </button>
+                    <button type="submit" class="submit-button">
+                        <i class="fas fa-save"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin + '/api';
+        const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
+        let currentEditId = null;
+
+        // Sayfa yüklendiğinde portfolyo listesini getir
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!document.cookie.includes('isLoggedIn=true')) {
+                window.location.href = '/admin/login.html';
+                return;
+            }
+            loadPortfolios();
+        });
+
+        async function loadPortfolios() {
+            try {
+                const response = await fetch(`${BASE_URL}/portfolios`);
+                if (!response.ok) throw new Error('Portfolyo listesi alınamadı');
+                
+                const portfolios = await response.json();
+                const portfolioList = document.getElementById('portfolioList');
+                
+                if (portfolios.length === 0) {
+                    portfolioList.innerHTML = `
+                        <div class="col-span-full text-center py-8">
+                            <p class="text-gray-500">Henüz portfolyo projesi eklenmemiş.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                portfolioList.innerHTML = portfolios.map(portfolio => `
+                    <div class="portfolio-card">
+                        <img src="${portfolio.image || '/images/default-project.jpg'}" 
+                             alt="${portfolio.title}" 
+                             class="portfolio-image">
+                        <div class="portfolio-content">
+                            <h3 class="text-xl font-semibold text-white mb-2">${portfolio.title}</h3>
+                            <p class="text-gray-400 mb-3">${portfolio.description.substring(0, 100)}...</p>
+                            <div class="mb-3">
+                                ${portfolio.technologies.map(tech => 
+                                    `<span class="tech-tag">${tech}</span>`
+                                ).join('')}
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="space-x-2">
+                                    <button onclick="editPortfolio(${portfolio.id})" 
+                                            class="text-blue-400 hover:text-blue-300">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deletePortfolio(${portfolio.id})" 
+                                            class="text-red-400 hover:text-red-300">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="space-x-2">
+                                    ${portfolio.projectUrl ? `
+                                        <a href="${portfolio.projectUrl}" target="_blank" 
+                                           class="text-green-400 hover:text-green-300">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    ` : ''}
+                                    ${portfolio.githubUrl ? `
+                                        <a href="${portfolio.githubUrl}" target="_blank" 
+                                           class="text-purple-400 hover:text-purple-300">
+                                            <i class="fab fa-github"></i>
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Portfolyo listesi yüklenirken hata oluştu');
+            }
+        }
+
+        function showAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'Yeni Proje Ekle';
+            document.getElementById('portfolioForm').reset();
+            document.getElementById('currentImage').classList.add('hidden');
+            document.getElementById('portfolioModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('portfolioModal').classList.remove('active');
+            currentEditId = null;
+        }
+
+        async function savePortfolio(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('title', document.getElementById('title').value);
+            formData.append('description', document.getElementById('description').value);
+            formData.append('category', document.getElementById('category').value);
+            formData.append('technologies', document.getElementById('technologies').value);
+            formData.append('projectUrl', document.getElementById('projectUrl').value);
+            formData.append('githubUrl', document.getElementById('githubUrl').value);
+
+            const imageFile = document.getElementById('image').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            try {
+                const url = currentEditId 
+                    ? `${BASE_URL}/portfolios/${currentEditId}`
+                    : `${BASE_URL}/portfolios`;
+                    
+                const method = currentEditId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Portfolyo kaydedilemedi');
+
+                alert(currentEditId ? 'Proje güncellendi!' : 'Yeni proje eklendi!');
+                closeModal();
+                loadPortfolios();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Portfolyo kaydedilirken hata oluştu');
+            }
+        }
+
+        async function editPortfolio(id) {
+            try {
+                const response = await fetch(`${BASE_URL}/portfolios/${id}`);
+                if (!response.ok) throw new Error('Portfolyo bilgileri alınamadı');
+                
+                const portfolio = await response.json();
+                currentEditId = id;
+                
+                document.getElementById('modalTitle').textContent = 'Projeyi Düzenle';
+                document.getElementById('title').value = portfolio.title;
+                document.getElementById('description').value = portfolio.description;
+                document.getElementById('category').value = portfolio.category;
+                document.getElementById('technologies').value = portfolio.technologies.join(', ');
+                document.getElementById('projectUrl').value = portfolio.projectUrl || '';
+                document.getElementById('githubUrl').value = portfolio.githubUrl || '';
+                
+                if (portfolio.image) {
+                    document.getElementById('currentImage').classList.remove('hidden');
+                    document.getElementById('currentImage').querySelector('img').src = portfolio.image;
+                } else {
+                    document.getElementById('currentImage').classList.add('hidden');
+                }
+                
+                document.getElementById('portfolioModal').classList.add('active');
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Portfolyo bilgileri yüklenirken hata oluştu');
+            }
+        }
+
+        async function deletePortfolio(id) {
+            if (!confirm('Bu projeyi silmek istediğinizden emin misiniz?')) return;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/portfolios/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Portfolyo silinemedi');
+
+                alert('Proje başarıyla silindi!');
+                loadPortfolios();
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Portfolyo silinirken hata oluştu');
+            }
+        }
+
+        function removeImage() {
+            document.getElementById('currentImage').classList.add('hidden');
+            document.getElementById('image').value = '';
+        }
+
+        function logout() {
+            document.cookie = 'isLoggedIn=false; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+            window.location.href = '/admin/login.html';
+        }
+    </script>
+</body>
+</html>

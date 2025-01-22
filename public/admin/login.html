@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0a192f;
+            color: #8892b0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .login-container {
+            background: #112240;
+            border-radius: 10px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #233554;
+            box-shadow: 0 10px 30px -15px rgba(2,12,27,0.7);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: #ccd6f6;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ccd6f6;
+            font-size: 0.875rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: #1e293b;
+            border: 1px solid #233554;
+            border-radius: 5px;
+            color: #ccd6f6;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #64ffda;
+            box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #64ffda;
+            color: #0a192f;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-button:hover {
+            background: #4cd7b7;
+            transform: translateY(-2px);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background: rgba(255, 99, 71, 0.1);
+            color: tomato;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle i {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8892b0;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle i:hover {
+            color: #64ffda;
+        }
+
+        .loading {
+            display: none;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Admin Panel</h1>
+            <p>Devam etmek için giriş yapın</p>
+        </div>
+
+        <div id="errorMessage" class="error-message">
+            Hatalı kullanıcı adı veya şifre!
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">Kullanıcı Adı</label>
+                <input type="text" 
+                       id="username" 
+                       class="form-input" 
+                       required 
+                       autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Şifre</label>
+                <div class="password-toggle">
+                    <input type="password" 
+                           id="password" 
+                           class="form-input" 
+                           required 
+                           autocomplete="current-password">
+                    <i class="far fa-eye" onclick="togglePassword()"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="login-button">
+                Giriş Yap
+                <span class="loading">
+                    <i class="fas fa-spinner"></i>
+                </span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin + '/api';
+
+        // Eğer zaten giriş yapılmışsa dashboard'a yönlendir
+        if (document.cookie.includes('isLoggedIn=true')) {
+            window.location.href = '/admin/';
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const loading = document.querySelector('.loading');
+            const loginButton = document.querySelector('.login-button');
+            
+            // Giriş butonunu devre dışı bırak ve loading göster
+            loginButton.disabled = true;
+            loading.style.display = 'inline-block';
+            errorMessage.style.display = 'none';
+
+            try {
+                const response = await fetch(`${BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Giriş başarısız');
+                }
+
+                const data = await response.json();
+                
+                // Token'ı sakla ve cookie'yi ayarla
+                localStorage.setItem('adminToken', data.token);
+                document.cookie = 'isLoggedIn=true; path=/';
+                
+                // Dashboard'a yönlendir
+                window.location.href = '/admin/';
+            } catch (error) {
+                console.error('Giriş hatası:', error);
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Hatalı kullanıcı adı veya şifre!';
+            } finally {
+                // Giriş butonunu tekrar aktif et ve loading'i gizle
+                loginButton.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.querySelector('.password-toggle i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
+</body>
+</html> 
