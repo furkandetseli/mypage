@@ -3,147 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolyo - Projelerim</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/animations.css">
+    <title>Portfolyo</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <style>
+        .portfolio-section {
+            padding: 100px 0;
+            min-height: 100vh;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .portfolio-item {
+            background: #112240;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #233554;
+        }
+
+        .portfolio-item:hover {
+            transform: translateY(-5px);
+            border-color: #64ffda;
+        }
+
+        .portfolio-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .portfolio-content {
+            padding: 1.5rem;
+        }
+
+        .portfolio-title {
+            color: #ccd6f6;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .portfolio-description {
+            color: #8892b0;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tech-tag {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .portfolio-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .portfolio-links a {
+            color: #64ffda;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .portfolio-links a:hover {
+            color: #ccd6f6;
+        }
+
+        .portfolio-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<body>
-    <div id="header"></div>
+<body style="padding-top: 80px;">
+    <div id="header-container"></div>
 
-    <!-- Main Content -->
-    <main>
-        <section class="portfolio-section fade-in">
-            <div class="section-title">
-                <h2>Portfolyo</h2>
-                <div class="underline"></div>
+    <section class="portfolio-section">
+        <div class="container">
+            <h1 class="section-title" data-aos="fade-up">Portfolyo</h1>
+
+            <div class="portfolio-grid" id="portfolio-list">
+                <!-- Portfolyo projeleri buraya dinamik olarak eklenecek -->
             </div>
-            
-            <div class="portfolio-filters slide-up">
-                <button class="filter-btn active" data-filter="all">Tümü</button>
-                <button class="filter-btn" data-filter="web">Web</button>
-                <button class="filter-btn" data-filter="mobile">Mobil</button>
-                <button class="filter-btn" data-filter="design">Tasarım</button>
-            </div>
+        </div>
+    </section>
 
-            <div class="portfolio-grid slide-up">
-                <!-- Portfolio items will be loaded here dynamically -->
-            </div>
-        </section>
-    </main>
-
-    <div id="footer"></div>
-
-    <script src="js/menu.js"></script>
     <script>
-        // Header ve Footer'ı yükle
-        fetch('/header.html')
+        // AOS'u başlat
+        AOS.init({
+            duration: 1000,
+            once: true,
+            mirror: false
+        });
+
+        // Header'ı yükle
+        fetch('header.html')
             .then(response => response.text())
             .then(data => {
-                document.getElementById('header').innerHTML = data;
-                
-                // Active class'ı ekle
-                const currentPage = window.location.pathname;
-                document.querySelectorAll('.nav-link').forEach(link => {
-                    if (link.getAttribute('href') === currentPage) {
-                        link.classList.add('active');
-                    }
-                });
-                document.querySelectorAll('.mobile-link').forEach(link => {
-                    if (link.getAttribute('href') === currentPage) {
-                        link.classList.add('active');
-                    }
-                });
+                document.getElementById('header-container').innerHTML = data;
             });
 
-        fetch('/footer.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('footer').innerHTML = data;
-            });
+        const BASE_URL = 'http://localhost:5000/api';
 
-        // Portfolio verilerini yükle ve filtrele
-        let allProjects = [];
-        let currentFilter = 'all';
-
-        async function loadPortfolio() {
+        async function loadPortfolios() {
             try {
-                const response = await fetch('/api/portfolio');
-                if (!response.ok) throw new Error('Portfolio verileri yüklenemedi');
+                const response = await fetch(`${BASE_URL}/portfolios`);
+                if (!response.ok) throw new Error('Portfolyo projeleri yüklenemedi');
+                const portfolios = await response.json();
                 
-                allProjects = await response.json();
-                filterProjects(currentFilter);
+                console.log('Portfolios data:', portfolios); // Gelen veriyi kontrol edelim
+                
+                const portfolioList = document.getElementById('portfolio-list');
+                
+                if (portfolios.length === 0) {
+                    portfolioList.innerHTML = `
+                        <div class="no-portfolio-message" data-aos="fade-up">
+                            <p>Henüz portfolyo projesi eklenmemiş.</p>
+                        </div>
+                    `;
+                    return;
+                }
 
-                // Animasyonları başlat
-                document.querySelectorAll('.slide-up').forEach((element, index) => {
-                    element.style.animationDelay = `${index * 0.2}s`;
-                });
+                portfolioList.innerHTML = portfolios.map((portfolio, index) => {
+                    console.log('Portfolio item:', portfolio); // Her bir portfolio öğesini kontrol edelim
+                    return `
+                        <div class="portfolio-item" data-aos="fade-up" data-aos-delay="${index * 100}">
+                            <a href="/portfolio-detail.html?id=${portfolio.id}" class="portfolio-link">
+                                <img src="${portfolio.image || '/images/default-project.jpg'}" 
+                                     alt="${portfolio.title}" 
+                                     class="portfolio-image">
+                                <div class="portfolio-content">
+                                    <h2 class="portfolio-title">${portfolio.title}</h2>
+                                    <div class="portfolio-description">
+                                        ${portfolio.description.substring(0, 100)}...
+                                    </div>
+                                    <div class="tech-stack">
+                                        ${portfolio.technologies.map(tech => 
+                                            `<span class="tech-tag">${tech}</span>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+                }).join('');
             } catch (error) {
-                console.error('Portfolio yükleme hatası:', error);
+                console.error('Hata:', error);
+                document.getElementById('portfolio-list').innerHTML = `
+                    <div class="no-portfolio-message">
+                        <p>Portfolyo projeleri yüklenirken bir hata oluştu.</p>
+                    </div>
+                `;
             }
         }
 
-        function filterProjects(filter) {
-            currentFilter = filter;
-            const portfolioGrid = document.querySelector('.portfolio-grid');
-            
-            // Filtreleme butonlarını güncelle
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.filter === filter);
-            });
-
-            // Projeleri filtrele
-            const filteredProjects = filter === 'all' 
-                ? allProjects 
-                : allProjects.filter(project => project.technologies.toLowerCase().includes(filter));
-
-            // Projeleri göster
-            portfolioGrid.innerHTML = filteredProjects.map(project => `
-                <div class="portfolio-item ${project.featured ? 'featured' : ''} slide-up">
-                    <div class="portfolio-content">
-                        ${project.image ? `
-                            <div class="portfolio-image">
-                                <img src="${project.image}" alt="${project.title}">
-                            </div>
-                        ` : ''}
-                        <div class="portfolio-info">
-                            <h3>${project.title}</h3>
-                            <p>${project.description}</p>
-                            <div class="tech-stack">
-                                ${project.technologies.split(',').map(tech => 
-                                    `<span class="tech-tag">${tech.trim()}</span>`
-                                ).join('')}
-                            </div>
-                            <div class="portfolio-links">
-                                ${project.github ? `
-                                    <a href="${project.github}" target="_blank" rel="noopener noreferrer" class="github-link">
-                                        <i class="fab fa-github"></i>
-                                    </a>
-                                ` : ''}
-                                ${project.link ? `
-                                    <a href="${project.link}" target="_blank" rel="noopener noreferrer" class="live-link">
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                ` : ''}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            // Yeni eklenen elementlere animasyon ekle
-            document.querySelectorAll('.portfolio-item').forEach((element, index) => {
-                element.style.animationDelay = `${index * 0.1}s`;
-            });
-        }
-
-        // Filtreleme butonlarına event listener ekle
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => filterProjects(btn.dataset.filter));
-        });
-
-        // Sayfa yüklendiğinde projeleri yükle
-        document.addEventListener('DOMContentLoaded', loadPortfolio);
+        document.addEventListener('DOMContentLoaded', loadPortfolios);
     </script>
 </body>
 </html>

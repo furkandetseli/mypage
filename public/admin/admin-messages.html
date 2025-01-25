@@ -97,38 +97,6 @@
     </style>
 </head>
 <body class="bg-gray-100">
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h1 class="sidebar-title">Admin Panel</h1>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="/admin/" class="nav-item">
-                <i class="fas fa-home"></i>
-                Dashboard
-            </a>
-            <a href="/admin/blog.html" class="nav-item">
-                <i class="fas fa-blog"></i>
-                Blog Yazıları
-            </a>
-            <a href="/admin/portfolio.html" class="nav-item">
-                <i class="fas fa-briefcase"></i>
-                Portfolyo
-            </a>
-            <a href="/admin/messages.html" class="nav-item active">
-                <i class="fas fa-envelope"></i>
-                Mesajlar
-            </a>
-            <a href="/admin/settings.html" class="nav-item">
-                <i class="fas fa-cog"></i>
-                Ayarlar
-            </a>
-            <a href="#" onclick="logout()" class="nav-item">
-                <i class="fas fa-sign-out-alt"></i>
-                Çıkış Yap
-            </a>
-        </nav>
-    </div>
-
     <main class="main-content">
         <div class="content-header">
             <h1>Mesajlar</h1>
@@ -179,19 +147,17 @@
         </div>
     </div>
 
+    <script src="/admin/components/sidebar.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.insertAdjacentHTML('afterbegin', createSidebar('messages'));
+            loadMessages();
+        });
+
         const BASE_URL = window.location.origin + '/api';
         const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
         let currentMessages = [];
         let currentMessageId = null;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!document.cookie.includes('isLoggedIn=true')) {
-                window.location.href = '/admin/login.html';
-                return;
-            }
-            loadMessages();
-        });
 
         async function loadMessages() {
             try {

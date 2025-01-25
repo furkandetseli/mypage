@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proje Detayı</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <style>
+        .project-detail {
+            padding: 100px 0;
+            min-height: 100vh;
+        }
+
+        .project-header {
+            margin-bottom: 2rem;
+        }
+
+        .project-title {
+            color: #ccd6f6;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .project-description {
+            color: #8892b0;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .tech-tag {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .project-links a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64ffda;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #64ffda;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .project-links a:hover {
+            background: rgba(100, 255, 218, 0.1);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64ffda;
+            text-decoration: none;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .back-button:hover {
+            color: #ccd6f6;
+        }
+
+        @media (max-width: 768px) {
+            .project-title {
+                font-size: 1.5rem;
+            }
+
+            .project-links {
+                flex-direction: column;
+            }
+
+            .project-links a {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body style="padding-top: 80px;">
+    <div id="header-container"></div>
+
+    <section class="project-detail">
+        <div class="container">
+            <a href="/portfolio.html" class="back-button" data-aos="fade-right">
+                <i class="fas fa-arrow-left"></i>
+                Portfolyoya Dön
+            </a>
+
+            <div id="project-content">
+                <!-- Proje detayları buraya dinamik olarak eklenecek -->
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // AOS'u başlat
+        AOS.init({
+            duration: 1000,
+            once: true,
+            mirror: false
+        });
+
+        // Header'ı yükle
+        fetch('header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header-container').innerHTML = data;
+            });
+
+        const BASE_URL = 'http://localhost:5000/api';
+
+        async function loadProjectDetail() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const projectId = urlParams.get('id');
+
+                if (!projectId) {
+                    throw new Error('Proje ID bulunamadı');
+                }
+
+                console.log('Fetching project with ID:', projectId);
+
+                const response = await fetch(`${BASE_URL}/portfolios/${projectId}`);
+                if (!response.ok) throw new Error('Proje detayları yüklenemedi');
+                
+                const project = await response.json();
+                console.log('Project data:', project);
+
+                const projectContent = document.getElementById('project-content');
+
+                projectContent.innerHTML = `
+                    <div class="project-header" data-aos="fade-up">
+                        <h1 class="project-title">${project.title}</h1>
+                    </div>
+
+                    ${project.image ? `
+                        <img src="${project.image}" 
+                             alt="${project.title}" 
+                             class="project-image" 
+                             data-aos="fade-up">
+                    ` : ''}
+
+                    <div class="project-description" data-aos="fade-up">
+                        ${project.description}
+                    </div>
+
+                    <div class="tech-stack" data-aos="fade-up">
+                        ${project.technologies.map(tech => 
+                            `<span class="tech-tag">${tech}</span>`
+                        ).join('')}
+                    </div>
+
+                    <div class="project-links" data-aos="fade-up">
+                        ${project.githubUrl ? `
+                            <a href="${project.githubUrl}" target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-github"></i>
+                                GitHub'da İncele
+                            </a>
+                        ` : ''}
+                        ${project.projectUrl ? `
+                            <a href="${project.projectUrl}" target="_blank" rel="noopener noreferrer">
+                                <i class="fas fa-external-link-alt"></i>
+                                Canlı Projeyi Gör
+                            </a>
+                        ` : ''}
+                    </div>
+                `;
+
+                // Sayfa başlığını güncelle
+                document.title = `${project.title} - Proje Detayı`;
+
+            } catch (error) {
+                console.error('Hata:', error);
+                document.getElementById('project-content').innerHTML = `
+                    <div class="error-message" data-aos="fade-up">
+                        <p>Proje detayları yüklenirken bir hata oluştu.</p>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProjectDetail);
+    </script>
+</body>
+</html> 

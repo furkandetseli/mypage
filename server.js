@@ -119,22 +119,109 @@ sequelize.sync()
   .then(() => console.log('Veritabanı bağlantısı başarılı'))
   .catch(err => console.error('Veritabanı bağlantı hatası:', err));
 
-// API Endpoints
-// Admin Auth Middleware
+// JWT Secret
+const JWT_SECRET = 'your-super-secret-jwt-key-1234567890';
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
+
+// Admin login routes
+app.post('/api/admin/login', express.json(), (req, res) => {
+    const { username, password } = req.body;
+    console.log('Login attempt:', { 
+        username, 
+        password,
+        isUsernameCorrect: username === ADMIN_USERNAME,
+        isPasswordCorrect: password === ADMIN_PASSWORD
+    });
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        const token = jwt.sign(
+            { username: username },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000
+        });
+
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ 
+            success: false, 
+            message: 'Geçersiz kullanıcı adı veya şifre' 
+        });
+    }
+});
+
+// Authentication middleware
 const authenticateAdmin = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  const token = req.cookies.token;
+  
+  if (!token) {
+      return res.redirect('/admin/login');
   }
 
-  const token = authHeader.split(' ')[1];
-  if (token !== config.adminToken) {
-    return res.status(401).json({ error: 'Invalid token' });
+  try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.user = decoded;
+      next();
+  } catch (error) {
+      res.redirect('/admin/login');
   }
-
-  next();
 };
 
+// Admin routes
+app.get('/admin', authenticateAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/admin-dashboard.html'));
+});
+
+app.get('/admin/blog', authenticateAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/admin-blog.html'));
+});
+
+app.get('/admin/portfolio', authenticateAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/admin-portfolio.html'));
+});
+
+app.get('/admin/messages', authenticateAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/admin-messages.html'));
+});
+
+app.get('/admin/settings', authenticateAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/admin-settings.html'));
+});
+
+// Login routes
+app.get(['/admin/login', '/admin/login.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/admin-login.html'));
+});
+
+// Admin stats route
+app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
+    try {
+        // Burada gerçek veritabanı sorgularınız olacak
+        // Şimdilik örnek veriler döndürelim
+        const stats = {
+            blogCount: 5,
+            portfolioCount: 8,
+            messageCount: 3,
+            visitorCount: 1250
+        };
+
+        res.json(stats);
+    } catch (error) {
+        console.error('Stats error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'İstatistikler yüklenirken bir hata oluştu' 
+        });
+    }
+});
+
+// API Endpoints
 // API Routes
 const apiRouter = express.Router();
 
@@ -440,93 +527,117 @@ app.delete('/api/projects/:id', async (req, res) => {
   }
 });
 
-// Portfolio Endpoints
+// Portfolio routes
 app.get('/api/portfolios', async (req, res) => {
-  try {
-    console.log('Portfolyo listesi istendi');
-    const portfolios = await Portfolio.findAll({
-      order: [['created_at', 'DESC']]
-    });
-    console.log('Bulunan portfolyolar:', portfolios.length);
-    res.json(portfolios);
-  } catch (error) {
-    console.error('Portfolio fetch error:', error);
-    res.status(500).json({ error: error.message });
-  }
+    try {
+        const portfolios = await Portfolio.findAll({
+            order: [['created_at', 'DESC']]
+        });
+        res.json(portfolios);
+    } catch (error) {
+        console.error('Portfolio fetch error:', error);
+        res.status(500).json({ error: 'Portfolyo projeleri yüklenirken hata oluştu' });
+    }
+});
+
+app.get('/api/portfolios/:id', async (req, res) => {
+    try {
+        const portfolio = await Portfolio.findByPk(req.params.id);
+        
+        if (!portfolio) {
+            return res.status(404).json({ error: 'Portfolyo projesi bulunamadı' });
+        }
+        
+        res.json(portfolio);
+    } catch (error) {
+        console.error('Portfolio detail error:', error);
+        res.status(500).json({ error: 'Portfolyo detayları yüklenirken hata oluştu' });
+    }
 });
 
 app.post('/api/portfolios', authenticateAdmin, upload.single('image'), async (req, res) => {
-  try {
-    const { title, description, category, technologies, projectUrl, githubUrl } = req.body;
-    const portfolio = await Portfolio.create({
-      title,
-      description,
-      image: req.file ? `/uploads/${req.file.filename}` : null,
-      category,
-      technologies: technologies.split(','),
-      projectUrl,
-      githubUrl,
-      created_at: new Date(),
-      updated_at: new Date()
-    });
-    res.status(201).json(portfolio);
-  } catch (error) {
-    console.error('Portfolio create error:', error);
-    res.status(500).json({ error: error.message });
-  }
+    try {
+        const { title, description, technologies, projectUrl, githubUrl, category } = req.body;
+        let imagePath = null;
+
+        if (req.file) {
+            imagePath = `/uploads/${req.file.filename}`;
+        }
+
+        const portfolio = await Portfolio.create({
+            title,
+            description,
+            technologies,
+            projectUrl,
+            githubUrl,
+            category,
+            image: imagePath
+        });
+
+        res.json(portfolio);
+    } catch (error) {
+        console.error('Portfolio creation error:', error);
+        res.status(500).json({ error: 'Portfolyo projesi oluşturulurken hata oluştu' });
+    }
 });
 
 app.put('/api/portfolios/:id', authenticateAdmin, upload.single('image'), async (req, res) => {
-  try {
-    const portfolio = await Portfolio.findByPk(req.params.id);
-    if (!portfolio) {
-      return res.status(404).json({ error: 'Portfolio bulunamadı' });
-    }
-
-    const updateData = {
-      ...req.body,
-      technologies: req.body.technologies.split(','),
-      updated_at: new Date()
-    };
-
-    if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
-      if (portfolio.image) {
-        const oldImagePath = path.join(__dirname, portfolio.image);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
+    try {
+        const portfolio = await Portfolio.findByPk(req.params.id);
+        if (!portfolio) {
+            return res.status(404).json({ error: 'Portfolyo projesi bulunamadı' });
         }
-      }
-    }
 
-    await portfolio.update(updateData);
-    res.json(portfolio);
-  } catch (error) {
-    console.error('Portfolio update error:', error);
-    res.status(500).json({ error: error.message });
-  }
+        const { title, description, technologies, projectUrl, githubUrl, category } = req.body;
+        let imagePath = portfolio.image;
+
+        if (req.file) {
+            imagePath = `/uploads/${req.file.filename}`;
+            if (portfolio.image) {
+                const oldImagePath = path.join(__dirname, 'public', portfolio.image);
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+        }
+
+        await portfolio.update({
+            title,
+            description,
+            technologies,
+            projectUrl,
+            githubUrl,
+            category,
+            image: imagePath
+        });
+
+        res.json(portfolio);
+    } catch (error) {
+        console.error('Portfolio update error:', error);
+        res.status(500).json({ error: 'Portfolyo projesi güncellenirken hata oluştu' });
+    }
 });
 
 app.delete('/api/portfolios/:id', authenticateAdmin, async (req, res) => {
-  try {
-    const portfolio = await Portfolio.findByPk(req.params.id);
-    if (!portfolio) {
-      return res.status(404).json({ error: 'Portfolio bulunamadı' });
-    }
+    try {
+        const portfolio = await Portfolio.findByPk(req.params.id);
+        if (!portfolio) {
+            return res.status(404).json({ error: 'Portfolyo projesi bulunamadı' });
+        }
 
-    if (portfolio.image) {
-      const imagePath = path.join(__dirname, portfolio.image);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    }
+        if (portfolio.image) {
+            const imagePath = path.join(__dirname, 'public', portfolio.image);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
 
-    await portfolio.destroy();
-    res.json({ message: 'Portfolio başarıyla silindi' });
-  } catch (error) {
-    console.error('Portfolio delete error:', error);
-    res.status(500).json({ error: error.message });
-  }
+        await portfolio.destroy();
+        res.json({ message: 'Portfolyo projesi başarıyla silindi' });
+    } catch (error) {
+        console.error('Portfolio delete error:', error);
+        res.status(500).json({ error: 'Portfolyo projesi silinirken hata oluştu' });
+    }
 });
 
 // Contact Endpoints
@@ -554,78 +665,7 @@ app.post('/api/contact', async (req, res) => {
 // API router'ı ana uygulamaya ekle
 app.use('/api', apiRouter);
 
-// Admin panel route'ları
-app.get('/admin', checkAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/admin/index.html'));
-});
-
-app.get('/admin/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/admin/login.html'));
-});
-
-// Auth middleware
-function checkAuth(req, res, next) {
-    const isLoggedIn = req.cookies.isLoggedIn === 'true';
-    if (!isLoggedIn) {
-        res.redirect('/admin/login');
-        return;
-    }
-    next();
-}
-
-// Admin API endpoint'leri
-app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    
-    try {
-        // Burada gerçek kullanıcı doğrulaması yapılmalı
-        if (username === 'admin' && password === 'admin123') {
-            const token = 'admin-1234-secure-token-5678'; // Gerçek uygulamada JWT kullanılmalı
-            res.json({ token });
-        } else {
-            res.status(401).json({ error: 'Hatalı kullanıcı adı veya şifre' });
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: 'Giriş işlemi başarısız' });
-    }
-});
-
-// Tüm admin sayfaları için wildcard route
-app.get('/admin/*', checkAuth, (req, res) => {
-    const page = req.path.split('/admin/')[1];
-    const filePath = path.join(__dirname, `public/admin/${page}`);
-    
-    if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-    } else {
-        res.redirect('/admin');
-    }
-});
-
-// Static dosyalar için middleware'ler
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/css', express.static(path.join(__dirname, 'public/css')));
-app.use(express.static('public'));
-
-// Uploads klasörünü oluştur (eğer yoksa)
-if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads');
-}
-
-// Veritabanı bağlantısını test et
-async function testConnection() {
-    try {
-        await sequelize.authenticate();
-        console.log('Veritabanı bağlantısı başarılı.');
-    } catch (error) {
-        console.error('Veritabanı bağlantı hatası:', error);
-    }
-}
-
-testConnection();
-
 // Sunucuyu başlat
 app.listen(PORT, () => {
-  console.log(`Sunucu ${PORT} portunda çalışıyor`);
+  console.log(`Server is running on port ${PORT}`);
 });

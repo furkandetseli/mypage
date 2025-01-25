@@ -49,39 +49,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h1 class="sidebar-title">Admin Panel</h1>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="/admin/" class="nav-item">
-                <i class="fas fa-home"></i>
-                Dashboard
-            </a>
-            <a href="/admin/blog.html" class="nav-item">
-                <i class="fas fa-blog"></i>
-                Blog Yazıları
-            </a>
-            <a href="/admin/portfolio.html" class="nav-item active">
-                <i class="fas fa-briefcase"></i>
-                Portfolyo
-            </a>
-            <a href="/admin/messages.html" class="nav-item">
-                <i class="fas fa-envelope"></i>
-                Mesajlar
-            </a>
-            <a href="/admin/settings.html" class="nav-item">
-                <i class="fas fa-cog"></i>
-                Ayarlar
-            </a>
-            <a href="#" onclick="logout()" class="nav-item">
-                <i class="fas fa-sign-out-alt"></i>
-                Çıkış Yap
-            </a>
-        </nav>
-    </div>
-
+<body class="bg-navy">
     <main class="main-content">
         <div class="content-header">
             <h1>Portfolyo Yönetimi</h1>
@@ -167,17 +135,14 @@
         </div>
     </div>
 
+    <script src="/admin/components/sidebar.js"></script>
     <script>
         const BASE_URL = window.location.origin + '/api';
         const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
         let currentEditId = null;
 
-        // Sayfa yüklendiğinde portfolyo listesini getir
         document.addEventListener('DOMContentLoaded', () => {
-            if (!document.cookie.includes('isLoggedIn=true')) {
-                window.location.href = '/admin/login.html';
-                return;
-            }
+            document.body.insertAdjacentHTML('afterbegin', createSidebar('portfolio'));
             loadPortfolios();
         });
 

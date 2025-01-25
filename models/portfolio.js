@@ -1,10 +1,16 @@
 'use strict';
-const { Model } = require('sequelize');
-
+const {
+  Model
+} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Portfolio extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
     static associate(models) {
-      // define association here
+      // İlişkiler burada tanımlanacak (gerekirse)
     }
   }
   Portfolio.init({
@@ -16,40 +22,46 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: false
     },
-    image: DataTypes.STRING,
-    category: {
+    image: {
       type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: 'Genel'
+      allowNull: true
     },
     technologies: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
       get() {
         const rawValue = this.getDataValue('technologies');
         return rawValue ? rawValue.split(',') : [];
       },
-      set(val) {
-        if (Array.isArray(val)) {
-          this.setDataValue('technologies', val.join(','));
+      set(value) {
+        if (Array.isArray(value)) {
+          this.setDataValue('technologies', value.join(','));
         } else {
-          this.setDataValue('technologies', val);
+          this.setDataValue('technologies', value);
         }
       }
     },
     projectUrl: {
       type: DataTypes.STRING,
-      field: 'project_url'
+      allowNull: true
     },
     githubUrl: {
       type: DataTypes.STRING,
-      field: 'github_url'
+      allowNull: true
+    },
+    category: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'Genel'
     }
   }, {
     sequelize,
     modelName: 'Portfolio',
+    tableName: 'portfolios',
     underscored: true,
-    timestamps: true
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
   });
   return Portfolio;
 }; 

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+    <style>
+        :root {
+            --dark-navy: #020c1b;
+            --navy: #0a192f;
+            --light-navy: #112240;
+            --lightest-navy: #233554;
+            --navy-shadow: rgba(2, 12, 27, 0.7);
+            --slate: #8892b0;
+            --light-slate: #a8b2d1;
+            --lightest-slate: #ccd6f6;
+            --white: #e6f1ff;
+            --green: #64ffda;
+        }
+
+        body {
+            background-color: var(--navy);
+            color: var(--slate);
+            min-height: 100vh;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--light-navy);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 1px solid var(--lightest-navy);
+        }
+
+        .stat-card h3 {
+            color: var(--lightest-slate);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .number {
+            color: var(--green);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .recent-activity {
+            background-color: var(--light-navy);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 1px solid var(--lightest-navy);
+        }
+
+        .activity-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--lightest-navy);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 1rem;
+            width: calc(100% - 2rem);
+            margin: 0 1rem;
+            padding: 0.75rem;
+            background-color: var(--lightest-navy);
+            color: var(--light-slate);
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--green);
+            color: var(--navy);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar buradan kaldırıldı -->
+    <main class="main-content">
+        <h2 class="text-2xl font-bold text-lightest-slate mb-6">Dashboard</h2>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Blog Yazıları</h3>
+                <div class="number" id="blogCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Portfolio Projeleri</h3>
+                <div class="number" id="portfolioCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Yeni Mesajlar</h3>
+                <div class="number" id="messageCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Toplam Ziyaretçi</h3>
+                <div class="number" id="visitorCount">0</div>
+            </div>
+        </div>
+
+        <div class="recent-activity">
+            <h3 class="text-lg font-semibold text-lightest-slate mb-4">Son Aktiviteler</h3>
+            <div id="activityList">
+                <!-- Aktiviteler JavaScript ile doldurulacak -->
+            </div>
+        </div>
+    </main>
+
+    <script src="/admin/components/sidebar.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.insertAdjacentHTML('afterbegin', createSidebar('dashboard'));
+            loadStats();
+        });
+
+        // Çıkış işlemi
+        async function handleLogout() {
+            try {
+                const response = await fetch('/api/admin/logout', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    window.location.href = '/admin/login';
+                }
+            } catch (error) {
+                console.error('Çıkış hatası:', error);
+            }
+        }
+
+        // İstatistikleri yükle
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                
+                if (!response.ok) {
+                    throw new Error('İstatistikler yüklenemedi');
+                }
+
+                const stats = await response.json();
+                
+                // İstatistikleri göster
+                document.getElementById('blogCount').textContent = stats.blogCount || 0;
+                document.getElementById('portfolioCount').textContent = stats.portfolioCount || 0;
+                document.getElementById('messageCount').textContent = stats.messageCount || 0;
+                document.getElementById('visitorCount').textContent = stats.visitorCount || 0;
+            } catch (error) {
+                console.error('İstatistik yükleme hatası:', error);
+                // Hata durumunda tüm sayıları 0 göster
+                ['blogCount', 'portfolioCount', 'messageCount', 'visitorCount'].forEach(id => {
+                    document.getElementById(id).textContent = '0';
+                });
+            }
+        }
+    </script>
+</body>
+</html> 
