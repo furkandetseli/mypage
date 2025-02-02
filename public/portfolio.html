@@ -41,6 +41,9 @@
 
         .portfolio-content {
             padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .portfolio-title {
@@ -65,7 +68,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: auto;
         }
 
         .tech-tag {
@@ -99,6 +102,29 @@
             text-decoration: none;
             color: inherit;
             display: block;
+        }
+
+        .read-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64ffda;
+            text-decoration: none;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .read-more:hover {
+            color: #ccd6f6;
+        }
+
+        .read-more span {
+            transition: transform 0.3s ease;
+        }
+
+        .read-more:hover span {
+            transform: translateX(5px);
         }
 
         @media (max-width: 768px) {
@@ -157,29 +183,30 @@
                     return;
                 }
 
-                portfolioList.innerHTML = portfolios.map((portfolio, index) => {
-                    console.log('Portfolio item:', portfolio); // Her bir portfolio öğesini kontrol edelim
-                    return `
-                        <div class="portfolio-item" data-aos="fade-up" data-aos-delay="${index * 100}">
-                            <a href="/portfolio-detail.html?id=${portfolio.id}" class="portfolio-link">
-                                <img src="${portfolio.image || '/images/default-project.jpg'}" 
-                                     alt="${portfolio.title}" 
-                                     class="portfolio-image">
-                                <div class="portfolio-content">
-                                    <h2 class="portfolio-title">${portfolio.title}</h2>
-                                    <div class="portfolio-description">
-                                        ${portfolio.description.substring(0, 100)}...
-                                    </div>
-                                    <div class="tech-stack">
-                                        ${portfolio.technologies.map(tech => 
-                                            `<span class="tech-tag">${tech}</span>`
-                                        ).join('')}
-                                    </div>
+                portfolioList.innerHTML = portfolios.map((portfolio, index) => `
+                    <div class="portfolio-item" data-aos="fade-up" data-aos-delay="${index * 100}">
+                        <a href="/portfolio-detail.html?id=${portfolio.id}" class="portfolio-link">
+                            <img src="${portfolio.image || '/images/default-project.jpg'}" 
+                                 alt="${portfolio.title}" 
+                                 class="portfolio-image">
+                            <div class="portfolio-content">
+                                <h2 class="portfolio-title">${portfolio.title}</h2>
+                                <div class="portfolio-description">
+                                    ${portfolio.description.substring(0, 100)}...
                                 </div>
-                            </a>
-                        </div>
-                    `;
-                }).join('');
+                                <div class="tech-stack">
+                                    ${portfolio.technologies.map(tech => 
+                                        `<span class="tech-tag">${tech}</span>`
+                                    ).join('')}
+                                </div>
+                                <a href="/portfolio-detail.html?id=${portfolio.id}" class="read-more">
+                                    Devamını Oku
+                                    <span>→</span>
+                                </a>
+                            </div>
+                        </a>
+                    </div>
+                `).join('');
             } catch (error) {
                 console.error('Hata:', error);
                 document.getElementById('portfolio-list').innerHTML = `

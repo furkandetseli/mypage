@@ -190,6 +190,7 @@
         let currentBlogs = [];
         let currentEditId = null;
         let quill;
+        let categories = new Set();
 
         document.addEventListener('DOMContentLoaded', () => {
             document.body.insertAdjacentHTML('afterbegin', createSidebar('blog'));
@@ -218,6 +219,7 @@
             });
 
             loadBlogs();
+            loadCategories();
         });
 
         async function loadBlogs() {
@@ -361,7 +363,8 @@
 
                 alert(currentEditId ? 'Blog yazısı güncellendi!' : 'Yeni blog yazısı eklendi!');
                 closeModal();
-                loadBlogs();
+                await loadBlogs();
+                await loadCategories();
             } catch (error) {
                 console.error('Hata:', error);
                 alert('Blog yazısı kaydedilirken hata oluştu');
@@ -413,6 +416,33 @@
         function logout() {
             document.cookie = 'isLoggedIn=false; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
             window.location.href = '/admin/login.html';
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${BASE_URL}/blogs`);
+                if (!response.ok) throw new Error('Bloglar yüklenemedi');
+                
+                const blogs = await response.json();
+                
+                // Tüm kategorileri topla
+                categories = new Set(blogs.map(blog => blog.category));
+                
+                // Filtre bölümünü güncelle
+                const filterSection = document.querySelector('.filter-section .flex');
+                filterSection.innerHTML = `
+                    <button onclick="filterByCategory('all')" class="category-filter active">
+                        Tümü
+                    </button>
+                    ${Array.from(categories).map(category => `
+                        <button onclick="filterByCategory('${category}')" class="category-filter">
+                            ${category}
+                        </button>
+                    `).join('')}
+                `;
+            } catch (error) {
+                console.error('Kategoriler yüklenirken hata:', error);
+            }
         }
     </script>
 </body>

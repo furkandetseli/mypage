@@ -214,6 +214,8 @@
         let blogs = [];
         const itemsPerPage = 6;
         let currentPage = 1;
+        let categories = new Set(); // Benzersiz kategorileri tutacak
+        let filteredBlogs = []; // Filtrelenmiş blogları tutacak
 
         async function fetchBlogs() {
             try {
@@ -231,7 +233,15 @@
                     date: new Date(blog.createdAt || Date.now()).toLocaleDateString('tr-TR')
                 }));
 
-                updateBlogList(blogs);
+                // Kategorileri topla
+                categories = new Set(blogs.map(blog => blog.category));
+                
+                // Kategori butonlarını oluştur
+                updateCategoryButtons();
+                
+                // Tüm blogları göster (ilk yükleme)
+                filteredBlogs = blogs;
+                updateBlogList(filteredBlogs);
             } catch (error) {
                 console.error('Hata:', error);
                 document.getElementById('blog-list').innerHTML = `
@@ -263,6 +273,12 @@
                 blogCard.className = 'blog-card';
                 blogCard.setAttribute('data-aos', 'fade-up');
                 blogCard.setAttribute('data-aos-delay', `${index * 100}`);
+                blogCard.style.cursor = 'pointer';
+                
+                blogCard.addEventListener('click', () => {
+                    window.location.href = `/blog-detay.html?id=${blog.id}`;
+                });
+                
                 blogCard.innerHTML = `
                     <img src="${blog.image}" alt="${blog.title}" class="blog-image">
                     <div class="blog-content">
@@ -272,12 +288,13 @@
                         </div>
                         <h2 class="blog-title">${blog.title}</h2>
                         <p class="blog-excerpt">${blog.excerpt}</p>
-                        <a href="/blog-detay.html?id=${blog.id}" class="read-more">
+                        <div class="read-more">
                             Devamını Oku
                             <span>&rarr;</span>
-                        </a>
+                        </div>
                     </div>
                 `;
+                
                 blogList.appendChild(blogCard);
             });
 
@@ -303,7 +320,7 @@
                 pageBtn.textContent = i;
                 pageBtn.addEventListener('click', () => {
                     currentPage = i;
-                    updateBlogList(blogs);
+                    updateBlogList(filteredBlogs);
                     setActivePageButton();
                 });
 
@@ -324,6 +341,38 @@
         }
 
         let isFetching = false;
+
+        // Kategori butonlarını güncelle
+        function updateCategoryButtons() {
+            const categoriesDiv = document.querySelector('.blog-categories');
+            categoriesDiv.innerHTML = `
+                <button class="category-btn active" data-category="all">Tümü</button>
+                ${Array.from(categories).map(category => `
+                    <button class="category-btn" data-category="${category}">${category}</button>
+                `).join('')}
+            `;
+
+            // Kategori butonlarına click event listener ekle
+            document.querySelectorAll('.category-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    // Aktif butonu güncelle
+                    document.querySelectorAll('.category-btn').forEach(btn => 
+                        btn.classList.remove('active')
+                    );
+                    button.classList.add('active');
+
+                    // Blogları filtrele
+                    const selectedCategory = button.dataset.category;
+                    filteredBlogs = selectedCategory === 'all' 
+                        ? blogs 
+                        : blogs.filter(blog => blog.category === selectedCategory);
+
+                    // Sayfa numarasını sıfırla ve filtrelenmiş blogları göster
+                    currentPage = 1;
+                    updateBlogList(filteredBlogs);
+                });
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             if (!isFetching) {

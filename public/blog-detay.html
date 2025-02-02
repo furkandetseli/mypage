@@ -171,6 +171,30 @@
             transform: translateY(-2px);
         }
 
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64ffda;
+            text-decoration: none;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .back-button:hover {
+            color: #ccd6f6;
+        }
+
+        .back-button i {
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 768px) {
             .blog-detail-container {
                 padding: 1.5rem;
@@ -189,6 +213,14 @@
             .blog-detail-image {
                 height: 300px;
             }
+
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .back-button {
+                margin-bottom: 1rem;
+            }
         }
     </style>
 </head>
@@ -196,6 +228,13 @@
     <div id="header"></div>
 
     <section class="blog-detail-section">
+        <div class="container">
+            <a href="/blog.html" class="back-button" data-aos="fade-right">
+                <i class="fas fa-arrow-left"></i>
+                Bloglara Dön
+            </a>
+        </div>
+
         <div class="blog-detail-container">
             <article id="blog-content">
                 <!-- Blog içeriği dinamik olarak buraya yüklenecek -->
@@ -232,7 +271,11 @@
                         <div class="blog-detail-meta">
                             <span class="meta-item">
                                 <i class="far fa-calendar"></i>
-                                ${new Date(blog.createdAt).toLocaleDateString('tr-TR')}
+                                ${new Date(blog.created_at).toLocaleDateString('tr-TR')}
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-history"></i>
+                                Son Güncelleme: ${new Date(blog.updated_at).toLocaleDateString('tr-TR')}
                             </span>
                             <span class="blog-detail-category">
                                 ${blog.category || 'Genel'}

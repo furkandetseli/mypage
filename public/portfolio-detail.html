@@ -59,7 +59,7 @@
             margin-bottom: 2rem;
         }
 
-        .project-links a {
+        .project-link {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -72,8 +72,19 @@
             transition: all 0.3s ease;
         }
 
-        .project-links a:hover {
+        .project-link:hover {
             background: rgba(100, 255, 218, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .project-link.github:hover {
+            border-color: #6e5494;
+            color: #6e5494;
+        }
+
+        .project-link.live:hover {
+            border-color: #00ff88;
+            color: #00ff88;
         }
 
         .back-button {
@@ -99,7 +110,7 @@
                 flex-direction: column;
             }
 
-            .project-links a {
+            .project-link {
                 width: 100%;
                 justify-content: center;
             }
@@ -148,13 +159,10 @@
                     throw new Error('Proje ID bulunamadı');
                 }
 
-                console.log('Fetching project with ID:', projectId);
-
                 const response = await fetch(`${BASE_URL}/portfolios/${projectId}`);
                 if (!response.ok) throw new Error('Proje detayları yüklenemedi');
                 
                 const project = await response.json();
-                console.log('Project data:', project);
 
                 const projectContent = document.getElementById('project-content');
 
@@ -180,20 +188,22 @@
                         ).join('')}
                     </div>
 
-                    <div class="project-links" data-aos="fade-up">
-                        ${project.githubUrl ? `
-                            <a href="${project.githubUrl}" target="_blank" rel="noopener noreferrer">
-                                <i class="fab fa-github"></i>
-                                GitHub'da İncele
-                            </a>
-                        ` : ''}
-                        ${project.projectUrl ? `
-                            <a href="${project.projectUrl}" target="_blank" rel="noopener noreferrer">
-                                <i class="fas fa-external-link-alt"></i>
-                                Canlı Projeyi Gör
-                            </a>
-                        ` : ''}
-                    </div>
+                    ${(project.githubUrl || project.projectUrl) ? `
+                        <div class="project-links" data-aos="fade-up">
+                            ${project.githubUrl ? `
+                                <a href="${project.githubUrl}" target="_blank" rel="noopener noreferrer" class="project-link github">
+                                    <i class="fab fa-github"></i>
+                                    GitHub'da İncele
+                                </a>
+                            ` : ''}
+                            ${project.projectUrl ? `
+                                <a href="${project.projectUrl}" target="_blank" rel="noopener noreferrer" class="project-link live">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    Canlı Projeyi Gör
+                                </a>
+                            ` : ''}
+                        </div>
+                    ` : ''}
                 `;
 
                 // Sayfa başlığını güncelle

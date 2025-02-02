@@ -122,7 +122,7 @@ sequelize.sync()
 // JWT Secret
 const JWT_SECRET = 'your-super-secret-jwt-key-1234567890';
 const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'admin-1234-secure-token-5678';
+const ADMIN_PASSWORD = 'admin';
 
 // Admin login routes
 app.post('/api/admin/login', express.json(), (req, res) => {
